@@ -1,6 +1,4 @@
-# Sets
-
-![Crates.io](https://img.shields.io/crates/v/sets?logo=rust) ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/liborty/sets/HEAD?logo=github)  
+# Sets ![Crates.io](https://img.shields.io/crates/v/sets?logo=rust) ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/liborty/sets/HEAD?logo=github)  
 
 ## Usage
 
@@ -10,7 +8,8 @@ Insert into your Cargo.toml file [dependencies] section:
 sets = "^0.1" 
 ```
 
-Import into your source file(s) macro `here`, structs and functions, as needed.  
+Import into your source file(s) macro `here`, structs and functions, as needed.
+  
 ```rust
 use sets::{here,Set,OrderedSet,IndexedSet,RankedSet,functions::*};
 ```
