@@ -29,6 +29,7 @@ pub struct Set<T> {
     pub v: Vec<T>
 } 
 
+/// Unordered set holding a generic Vec<T>.
 impl<T> Set<T> where T: Copy {
     /// Initialiser - copies to a new Vec
     pub fn from_slice(s: &[T]) -> Self {
@@ -65,7 +66,7 @@ impl<T> DerefMut for Set<T> {
         &mut self.v
     }
 }
-
+/// Ordered Set, holding a sorted (ascending or descending) generic Vec<T>.  
 pub struct OrderedSet<T> {
     pub ascending: bool,
     pub v: Vec<T>,
@@ -106,7 +107,8 @@ impl<T> OrderedSet<T> {
     }
 }
 
-/// Struct binding together a set and its sort index, making it an ordered set
+/// Struct holding a borrowed unordered set and its sort index. 
+/// Thus it is an indexed ordered set (ascending or descending).
 pub struct IndexedSet<'a,T> {
     pub ascending: bool,
     pub v: &'a[T],
@@ -134,7 +136,8 @@ impl<'a,T> IndexedSet<'a,T> {
     }
 }
 
-/// Struct binding together a set and its ranks 
+/// Struct holding a borrowed unordered set 
+/// and a vector of its ranks (ascending or descending).
 pub struct RankedSet<'a,T> {
     pub ascending: bool,
     pub v: &'a[T],
