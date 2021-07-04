@@ -28,7 +28,7 @@ The capabilities of `sets` include: efficient sorting, ranking, merging, searchi
 
 ## Functions
 
-Most of the functions are associated with the supplied structs: `Set, OrderedSet, IndexedSet, RankedSet`. Thus they need to be caled such as: ```Set::from_slice(&v);```  
+Most of the functions are associated with the supplied structs: `Set, OrderedSet, IndexedSet, RankedSet`. Thus they need to be called as in: ```Set::from_slice(&v);```  
 Helper functions are in the module `src/functions.rs`.
 
 ## Release Notes (Latest First)
