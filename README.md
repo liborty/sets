@@ -24,11 +24,11 @@ The main capabilities of `sets` include: efficient sorting, ranking, merging, se
 
 ## Functions
 
-Most of the functions are associated with the supplied structs: `Set, OrderedSet, IndexedSet, RankedSet`. Thus they need to be called as in: ```Set::from_slice(&v);```  
+The initiation and conversion functions are associated with their structs: `Set, OrderedSet, IndexedSet, RankedSet`. Thus they need to be called as in: ```Set::from_slice(&v);```  
 Some additional helper functions are in the module `src/functions.rs`.
 
 ## Release Notes (Latest First)
 
-**Version 0.1.1** -
+**Version 0.1.1** - competed the associated functions for all initiations and conversions of the four set structs.
 
 **Version 0.1.0** - first version, includes creation and conversions of the structs representing the four types of sets.
