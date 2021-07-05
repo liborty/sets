@@ -1,4 +1,5 @@
 pub mod functions;
+pub mod traitimpls;
 
 use std::ops::{Deref,DerefMut};
 use indxvec::{Indices,merge::*};
@@ -148,7 +149,8 @@ impl<'a,T: std::fmt::Display> std::fmt::Display for IndexedSet<'a,T> {
         if n == 0 { return writeln!(f,"[]") }
         let s = if self.ascending { String::from("Ascending") }
             else { String::from("Descending") };  
-        writeln!(f, "{} Indexed Set\nSet:   {}\nIndex: {}", s, writevec(&self.v), writevec(&self.i) )
+        writeln!(f, "{} Indexed Set\nSet:   {}\nIndex: {}",
+            s, writevec(&self.v), writevec(&self.i) )
     }
 }
 
@@ -203,17 +205,18 @@ impl<'a,T> RankedSet<'a,T> {
     }
 }
 
-
-
-/*
-/// Methods to manipulate indices of `Vec<usize>` type.
-pub trait SetOps<T> where  T: Copy {
-    // Vec<T> : IntoIterator { 
+/// Methods to work with the above set structs.
+pub trait SetOps<T> where T: Copy, Vec<T> : IntoIterator {
     /// Finds minimum, minimum's first index, maximum, maximum's first index of &[T] 
-    fn minmax(self) -> (T, usize, T, usize) where T: PartialOrd+Copy+IntoIterator; 
-    /// Binary search of a sorted list (in ascending order).
-    fn binsearch(self, val: T)  -> usize where T: PartialOrd;
-    /// Merges two ascending sorted generic vectors.
-    fn merge(self, v2: Self) -> Self where T: PartialOrd;  
+    fn infsup(self) -> (T, usize, T, usize) where T: PartialOrd+Copy+IntoIterator; 
+    /// Search of a set, returns index of the last found item.
+    fn search(self, m: T)  -> Option<usize> where T: PartialOrd;
+    /// True if m is a member of the set
+    fn member(&self, m: T) -> bool where T: PartialOrd;    
+    /// Union of two sets of the same type
+    fn union(self, s: Self) -> Self where T: PartialOrd;
+    /// Intersection of two sets of the same type
+    fn intersection(self, s: Self) -> Self where T: PartialOrd;
+    /// Complement of s in self (i.e. self-s)
+    fn complement(self, s: Self) -> Self where T: PartialOrd;
 }
-*/

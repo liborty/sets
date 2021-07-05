@@ -3,7 +3,7 @@
 #[cfg(test)]
 
 // use anyhow::{Result};
-use sets::{Set,OrderedSet,IndexedSet,RankedSet,functions::*};
+use sets::{Set,OrderedSet,IndexedSet,RankedSet,functions::*,SetOps};
 use indxvec::{Indices,merge::*};
 
 #[test]
@@ -11,6 +11,7 @@ fn indxvec() -> () {
    let v = vec![1.,14.,2.,13.,3.,12.,4.,11.,5.,10.,6.,9.,7.,8.,16.];
    let sv = Set::from_slice(&v);  
    println!("{}",sv); // Display of Set  
+   println!("Is {} member? {}",0.0, sv.member(0.0));
    println!("{}",OrderedSet::from_slice(&v,true)); // sorted data but index lost
    println!("{}",OrderedSet::from_set(&sv,false)); // descending sorted data, index lost  
    let ix = IndexedSet::from_set(&sv,false);    

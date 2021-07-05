@@ -27,7 +27,13 @@ The main capabilities of `sets` include: efficient sorting, ranking, merging, se
 The initiation and conversion functions are associated with their structs: `Set, OrderedSet, IndexedSet, RankedSet`. Thus they need to be called as in: ```Set::from_slice(&v);```  
 Some additional helper functions are in the module `src/functions.rs`.
 
+## Trait SetOps
+
+Implements set operations: `infsup, search, member, union, intersection, complement` for all four types of sets. Generally speaking, these are faster (more efficient) for the ordered and especially indexed sets, rather than for the unordered sets. For example, `member` is then able to use the binary search.
+
 ## Release Notes (Latest First)
+
+**Version 0.1.2** - implemented `SetOps` trait with standard set operations.
 
 **Version 0.1.1** - competed the associated functions for all initiations and conversions of the four set structs.
 
