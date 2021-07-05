@@ -24,17 +24,54 @@ macro_rules! here {
     }}
 }
 
-#[derive(Clone, PartialEq, Eq)]
+/// Unordered set holding a generic Vec<T>.
+/// Usually is the initial input.
+// #[derive(Clone, PartialEq, Eq)]
 pub struct Set<T> {
     pub v: Vec<T>
 } 
 
-/// Unordered set holding a generic Vec<T>.
+/// Implementation of Display trait for struct Set.
+impl<T: std::fmt::Display> std::fmt::Display for Set<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        writeln!(f, "Unordered Set:\n{}",writevec(&self.v))
+    }
+}
+
+/// Implementation of Deref trait for struct Set.
+/// Thus, for instance, calling `OrderedSet::from_slice(&s,true)`,
+/// where s is an instance of Set, will dereference s to the vector 
+/// contained in s and eventually to its slice and will not throw a type error.
+/// Of course, in this particular example, it would have been more correct to invoke 
+/// `OrderedSet::from_set(&s,true)` in the first place.
+impl<T> Deref for Set<T> {
+    type Target = Vec<T>; 
+    fn deref(&self) -> &Self::Target {
+        &self.v
+    }
+}
+
+/// Implementation of DerefMut trait for struct Self.
+impl<T> DerefMut for Set<T> { 
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.v
+    }
+}
+
 impl<T> Set<T> where T: Copy {
     /// Initialiser - copies to a new Vec
     pub fn from_slice(s: &[T]) -> Self {
         Set { v: s.to_vec() }
     }
+    /// Simply clones the slice and throws away its index
+    pub fn from_indexed(s: &IndexedSet<T>) -> Self {
+        Set{ v: s.v.to_vec() }
+    }
+    /// Simply clones the slice and throws away the ranks
+    pub fn from_ranked(s: &RankedSet<T>) -> Self {
+        Set{ v: s.v.to_vec() }
+    }
+ 
     /* 
     /// Sort index for an unordered set
     pub fn sortidx(self) -> Vec<usize> where T:PartialOrd {
@@ -47,31 +84,13 @@ impl<T> Set<T> where T: Copy {
     */
 }
 
-/// Display implemented for struct Set.
-impl<T: std::fmt::Display> std::fmt::Display for Set<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        writeln!(f, "Unordered Set:\n{}",writevec(&self.v))
-    }
-}
-
-impl<T> Deref for Set<T> {
-    type Target = Vec<T>; 
-    fn deref(&self) -> &Self::Target {
-        &self.v
-    }
-}
-
-impl<T> DerefMut for Set<T> { 
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.v
-    }
-}
-/// Ordered Set, holding a sorted (ascending or descending) generic Vec<T>.  
+/// Ordered Set, holding an explicitly sorted (ascending or descending) generic Vec<T>. 
+/// Often is the output of some process.
 pub struct OrderedSet<T> {
     pub ascending: bool,
     pub v: Vec<T>,
 }
-/// Display implemented for struct OrderedSet.
+/// Display trait implemented for struct OrderedSet.
 impl<T: std::fmt::Display> std::fmt::Display for OrderedSet<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let n = self.v.len();
@@ -95,20 +114,28 @@ impl<T> DerefMut for OrderedSet<T> {
 }
 
 impl<T> OrderedSet<T> {
-    /// Initiliser from unordered slice
+    /// Initiliser, explicitly sorts an unordered slice
     pub fn from_slice(s: &[T], asc: bool) -> Self where T:PartialOrd+Copy {
         OrderedSet{ ascending:asc, v: sortm(s,asc) }
     }
-    pub fn from_indexed(s: &IndexedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
-        OrderedSet{ ascending:asc, v: s.i.unindex(s.v,asc) }
+    /// Initiliser, explicitly sorts an unordered Set
+    pub fn from_set(s: &Set<T>, asc: bool) -> Self where T:PartialOrd+Copy {
+        OrderedSet{ ascending:asc, v: sortm(&s.v,asc) }
     }
+    /// Uses index to build explicitly ordered set
+    pub fn from_indexed(s: &IndexedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
+        let order = if asc == s.ascending { true } else { false };
+        OrderedSet{ ascending:asc, v: s.i.unindex(s.v,order) }
+    }
+    /// Uses ranks to build explicitly ordered set
     pub fn from_ranked(s: &RankedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
-        OrderedSet{ ascending:asc, v: s.i.invindex().unindex(s.v,asc) }
+        let order = if asc == s.ascending { true } else { false };
+        OrderedSet{ ascending:asc, v: s.i.invindex().unindex(s.v,order) }
     }
 }
 
 /// Struct holding a borrowed unordered set and its sort index. 
-/// Thus it is an indexed ordered set (ascending or descending).
+/// Thus it is an index ordered set (ascending or descending).
 pub struct IndexedSet<'a,T> {
     pub ascending: bool,
     pub v: &'a[T],
@@ -126,13 +153,20 @@ impl<'a,T: std::fmt::Display> std::fmt::Display for IndexedSet<'a,T> {
 }
 
 impl<'a,T> IndexedSet<'a,T> {
-    /// Initiliser from unordered slice
+    /// Initiliser, indexsorts an unordered slice
     pub fn from_slice(s: &'a[T], asc:bool) -> Self where T:PartialOrd+Copy {
         if asc { IndexedSet{ ascending:true, v:s, i:sortidx(s) } }
         else { IndexedSet{ ascending:false, v:s, i:revs(&sortidx(s)) } }
-    } 
-    pub fn from_ranked(s: &'a RankedSet<T>) -> Self where T:PartialOrd+Copy {
-        IndexedSet{ ascending: s.ascending, v: s.v, i: s.i.invindex() }  
+    }
+    /// Initiliser, indexsorts an unordered Set
+    pub fn from_set(s: &'a Set<T>, asc: bool) -> Self where T:PartialOrd+Copy {
+        if asc { IndexedSet{ ascending:true, v:&s.v, i:sortidx(&s.v) } }
+        else { IndexedSet{ ascending:false, v:&s.v, i:revs(&sortidx(&s.v)) } }     
+    }
+    /// Converts ranks to sort index
+    pub fn from_ranked(s: &'a RankedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
+        if asc == s.ascending { IndexedSet{ ascending: asc, v: s.v, i:s.i.invindex() } }
+        else  { IndexedSet{ ascending: asc, v: s.v, i:revs(&s.i.invindex()) } }     
     }
 }
 
@@ -154,11 +188,21 @@ impl<'a,T: std::fmt::Display> std::fmt::Display for RankedSet<'a,T> {
     }
 }
 impl<'a,T> RankedSet<'a,T> {
-    /// Initiliser from unordered slice
+    /// Initiliser, ranks an unordered slice
     pub fn from_slice(s: &'a[T], asc:bool) -> Self where T:PartialOrd+Copy {
         RankedSet{ ascending:asc, v:s, i:rank(s,asc) }
-    } 
+    }
+    /// Initiliser, ranks an unordered Set
+    pub fn from_set(s: &'a Set<T>, asc: bool) -> Self where T:PartialOrd+Copy {
+        RankedSet{ ascending:asc, v:&s.v, i:rank(s,asc) }    
+    }
+    /// Converts sort index to ranks
+    pub fn from_indexed(s: &'a IndexedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
+        if asc == s.ascending { RankedSet{ ascending: asc, v: s.v, i:s.i.invindex() } }
+        else  { RankedSet{ ascending: asc, v: s.v, i:s.i.invindex().complindex() } }     
+    }
 }
+
 
 
 /*
