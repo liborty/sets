@@ -1,29 +1,9 @@
-pub mod functions;
 pub mod traitimpls;
 
 use std::ops::{Deref,DerefMut};
 use indxvec::{Indices,merge::*};
-use self::functions::*;
 
 // const EMPTYIDX:Vec<usize> = vec![];
-
-/// macro `here!()` gives `&str` with the current `file:line path::function` for error messages.
-#[macro_export]
-macro_rules! here {
-    () => {{
-        fn f() {}
-        fn type_name_of<T>(_: T) -> &'static str {
-            std::any::type_name::<T>()
-        }
-        let name = type_name_of(f);
-        // For function name only:
-        // let fnct = match &name[..name.len()-3].rfind(':') {
-        //    Some(pos) => &name[pos + 1..name.len() - 3],
-        //    None => &name[..name.len()-3],
-        // };
-        format!("\n{}:{} {}", file!(), line!(), &name[..name.len()-3])
-    }}
-}
 
 /// Unordered set holding a generic Vec<T>.
 /// Usually is the initial input.
@@ -31,6 +11,14 @@ macro_rules! here {
 pub struct Set<T> {
     pub v: Vec<T>
 } 
+
+/// helper function to stringify a generic vector for display, without recourse to debug
+fn writevec<T>(v:&[T]) -> String where T: std::fmt::Display {
+    let mut s = String::from("\x1B[01;92m[ ");
+    for x in v { s.push_str(&x.to_string()); s.push_str(" ") };
+    s.push_str("]\x1B[0m");
+    s
+}
 
 /// Implementation of Display trait for struct Set.
 impl<T: std::fmt::Display> std::fmt::Display for Set<T> {
@@ -115,6 +103,17 @@ impl<T> DerefMut for OrderedSet<T> {
 }
 
 impl<T> OrderedSet<T> {
+
+    /// Constructor from an ascending ordered slice
+    pub fn from_asc_slice(s: &[T]) -> Self where T:PartialOrd+Copy {        
+        OrderedSet{ ascending:true, v: s.to_vec() }
+    }
+
+    /// Constructor from a descending ordered slice
+    pub fn from_desc_slice(s: &[T]) -> Self where T:PartialOrd+Copy {        
+        OrderedSet{ ascending:false, v: s.to_vec() }
+    }
+
     /// Initiliser, explicitly sorts an unordered slice
     pub fn from_slice(s: &[T], asc: bool) -> Self where T:PartialOrd+Copy {
         OrderedSet{ ascending:asc, v: sortm(s,asc) }
@@ -165,6 +164,14 @@ impl<'a,T> IndexedSet<'a,T> {
         if asc { IndexedSet{ ascending:true, v:&s.v, i:sortidx(&s.v) } }
         else { IndexedSet{ ascending:false, v:&s.v, i:revs(&sortidx(&s.v)) } }     
     }
+    /// From Oredered is not often needed, as the index will be trivial 
+    pub fn from_ordered(s: &'a OrderedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
+        let n = s.len();
+        let mut idx:Vec<usize> = vec![0;s.len()];
+        if asc == s.ascending { for i in 0..n { idx[i] = i } }          
+        else { for i in (0..n).rev() { idx[i] = i } };
+        IndexedSet{ ascending:asc, v:&s.v, i:idx } 
+    }
     /// Converts ranks to sort index
     pub fn from_ranked(s: &'a RankedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
         if asc == s.ascending { IndexedSet{ ascending: asc, v: s.v, i:s.i.invindex() } }
@@ -196,7 +203,15 @@ impl<'a,T> RankedSet<'a,T> {
     }
     /// Initiliser, ranks an unordered Set
     pub fn from_set(s: &'a Set<T>, asc: bool) -> Self where T:PartialOrd+Copy {
-        RankedSet{ ascending:asc, v:&s.v, i:rank(s,asc) }    
+        RankedSet{ ascending:asc, v:&s.v, i:rank(s,asc) } 
+    }        
+    /// From Oredered is not often needed, as the index will be trivial 
+    pub fn from_ordered(s: &'a OrderedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
+        let n = s.len();
+        let mut idx:Vec<usize> = vec![0;s.len()];
+        if asc == s.ascending { for i in 0..n { idx[i] = i } }          
+        else { for i in (0..n).rev() { idx[i] = i } };
+        RankedSet{ ascending:asc, v:&s.v, i:idx } 
     }
     /// Converts sort index to ranks
     pub fn from_indexed(s: &'a IndexedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
@@ -205,18 +220,20 @@ impl<'a,T> RankedSet<'a,T> {
     }
 }
 
-/// Methods to work with the above set structs.
-pub trait SetOps<T> where T: Copy, Vec<T> : IntoIterator {
-    /// Finds minimum, minimum's first index, maximum, maximum's first index of &[T] 
-    fn infsup(self) -> (T, usize, T, usize) where T: PartialOrd+Copy+IntoIterator; 
-    /// Search of a set, returns index of the last found item.
-    fn search(self, m: T)  -> Option<usize> where T: PartialOrd;
+/// Methods for the set structs.
+pub trait SetOps<T> where T: Copy {
+    /// Deletes any repetitions
+    fn nonrepeat(&self) -> Self where T: PartialOrd+Copy;
+    /// Finds minimum, minimum's first index, maximum, maximum's first index  
+    fn infsup(&self) -> (T, usize, T, usize) where T: PartialOrd+Copy; 
     /// True if m is a member of the set
-    fn member(&self, m: T) -> bool where T: PartialOrd;    
+    fn member(&self, m: T) -> bool where T: PartialOrd; 
+    /// Search of a set, returns Some(index) of the last item found, or None.
+    fn search(&self, m: T)  -> Option<usize> where T: PartialOrd;    
     /// Union of two sets of the same type
-    fn union(self, s: Self) -> Self where T: PartialOrd;
+    fn union(&self, s: &Self) -> OrderedSet<T> where T: PartialOrd;
     /// Intersection of two sets of the same type
-    fn intersection(self, s: Self) -> Self where T: PartialOrd;
-    /// Complement of s in self (i.e. self-s)
-    fn complement(self, s: Self) -> Self where T: PartialOrd;
+    fn intersection(&self, s: &Self) -> OrderedSet<T> where T: PartialOrd;
+    /// Removing s from self (i.e. self-s)
+    fn difference(&self, s: &Self) -> OrderedSet<T> where T: PartialOrd;
 }
