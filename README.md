@@ -29,9 +29,11 @@ Some additional helper functions are in the module `src/functions.rs`.
 
 ## Trait SetOps
 
-Implements set operations: `infsup, member, search, union, intersection, complement` for all four types of sets. Generally speaking, these are faster (more efficient) for the ordered and especially indexed sets, rather than for the unordered sets. For example, `member` is then able to use the binary search.
+Implements set operations: `nonrepeat, infsup, member, search, union, intersection, diference` for all four types of sets. Generally speaking, these are faster (more efficient) for the ordered and especially indexed sets, rather than for the unordered sets. For example, `member` is then able to use the binary search.
 
 ## Release Notes (Latest First)
+
+**Version 0.1.3** - fixed readme typos
 
 **Version 0.1.2** - implemented `SetOps` trait for struct `Set`. The other three structs will follow in the next version.
 
