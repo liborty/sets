@@ -1,29 +1,22 @@
 pub mod traitimpls;
 
 use std::ops::{Deref,DerefMut};
-use indxvec::{Indices,merge::*};
+use indxvec::{wv,Indices,merge::*};
 
 // const EMPTYIDX:Vec<usize> = vec![];
 
-/// Unordered set holding a generic Vec<T>.
+
+/// Unordered set holding a generic Vec<T>. 
 /// Usually is the initial input.
 // #[derive(Clone, PartialEq, Eq)]
 pub struct Set<T> {
     pub v: Vec<T>
 } 
 
-/// helper function to stringify a generic vector for display, without recourse to debug
-fn writevec<T>(v:&[T]) -> String where T: std::fmt::Display {
-    let mut s = String::from("\x1B[01;92m[ ");
-    for x in v { s.push_str(&x.to_string()); s.push_str(" ") };
-    s.push_str("]\x1B[0m");
-    s
-}
-
 /// Implementation of Display trait for struct Set.
-impl<T: std::fmt::Display> std::fmt::Display for Set<T> {
+impl<T: std::fmt::Display> std::fmt::Display for Set<T> where T:Copy {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        writeln!(f, "Unordered Set:\n{}",writevec(&self.v))
+        writeln!(f, "Unordered Set:\n{}",wv(&self.v))
     }
 }
 
@@ -59,18 +52,7 @@ impl<T> Set<T> where T: Copy {
     /// Simply clones the slice and throws away the ranks
     pub fn from_ranked(s: &RankedSet<T>) -> Self {
         Set{ v: s.v.to_vec() }
-    }
- 
-    /* 
-    /// Sort index for an unordered set
-    pub fn sortidx(self) -> Vec<usize> where T:PartialOrd {
-        mergesort(&self.v,0,self.v.len())
-    }
-    /// Reverse by reverse iteration
-    pub fn revs(self) -> Vec<T> { 
-        self.v.iter().rev().map(|&x| x).collect::<Vec<T>>() 
-    }   
-    */
+    }  
 }
 
 /// Ordered Set, holding an explicitly sorted (ascending or descending) generic Vec<T>. 
@@ -80,13 +62,13 @@ pub struct OrderedSet<T> {
     pub v: Vec<T>,
 }
 /// Display trait implemented for struct OrderedSet.
-impl<T: std::fmt::Display> std::fmt::Display for OrderedSet<T> {
+impl<T: std::fmt::Display> std::fmt::Display for OrderedSet<T> where T:Copy {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let n = self.v.len();
         if n == 0 { return writeln!(f,"[]") }
         let s = if self.ascending { String::from("Ascending") }
             else { String::from("Descending") };  
-        writeln!(f, "{} Ordered Set:\n{}", s, writevec(&self.v) )
+        writeln!(f, "{} Ordered Set:\n{}", s, wv(&self.v) )
     }
 }
 
@@ -142,14 +124,14 @@ pub struct IndexedSet<'a,T> {
     pub i: Vec<usize>,
 }
 /// Display implemented for struct IndexedSet.
-impl<'a,T: std::fmt::Display> std::fmt::Display for IndexedSet<'a,T> {
+impl<'a,T: std::fmt::Display> std::fmt::Display for IndexedSet<'a,T> where T:Copy {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let n = self.v.len();
         if n == 0 { return writeln!(f,"[]") }
         let s = if self.ascending { String::from("Ascending") }
             else { String::from("Descending") };  
         writeln!(f, "{} Indexed Set\nSet:   {}\nIndex: {}",
-            s, writevec(&self.v), writevec(&self.i) )
+            s, wv(&self.v), wv(&self.i) )
     }
 }
 
@@ -187,13 +169,13 @@ pub struct RankedSet<'a,T> {
     pub i: Vec<usize>,
 }
 /// Display implemented for struct IndexedSet.
-impl<'a,T: std::fmt::Display> std::fmt::Display for RankedSet<'a,T> {
+impl<'a,T: std::fmt::Display> std::fmt::Display for RankedSet<'a,T> where T:Copy {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let n = self.v.len();
         if n == 0 { return writeln!(f,"[]") }
         let s = if self.ascending { String::from("Ascending") }
             else { String::from("Descending") };  
-        writeln!(f, "{} Ranked Set\nSet:   {}\nRanks: {}", s, writevec(&self.v), writevec(&self.i) )
+        writeln!(f, "{} Ranked Set\nSet:   {}\nRanks: {}", s, wv(&self.v), wv(&self.i) )
     }
 }
 impl<'a,T> RankedSet<'a,T> {
@@ -216,12 +198,14 @@ impl<'a,T> RankedSet<'a,T> {
     /// Converts sort index to ranks
     pub fn from_indexed(s: &'a IndexedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
         if asc == s.ascending { RankedSet{ ascending: asc, v: s.v, i:s.i.invindex() } }
-        else  { RankedSet{ ascending: asc, v: s.v, i:s.i.invindex().complindex() } }     
+        else { RankedSet{ ascending: asc, v: s.v, i:s.i.invindex().complindex() } }     
     }
 }
 
 /// Methods for the set structs.
 pub trait SetOps<T> where T: Copy {
+    /// reverses the vector of explicit sets and index of indexed sets
+    fn reverse(&self) -> Self where T: PartialOrd+Copy;
     /// Deletes any repetitions
     fn nonrepeat(&self) -> Self where T: PartialOrd+Copy;
     /// Finds minimum, minimum's first index, maximum, maximum's first index  

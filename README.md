@@ -33,9 +33,9 @@ Implements set operations: `nonrepeat, infsup, member, search, union, intersecti
 
 ## Release Notes (Latest First)
 
-**Version 0.1.3** - fixed readme typos
+**Version 0.1.3** - fixed readme typos, improved tests, implemented `SetOps` for `OrderedSet`.
 
-**Version 0.1.2** - implemented `SetOps` trait for struct `Set`. The other three structs will follow in the next version.
+**Version 0.1.2** - implemented `SetOps` trait for struct `Set`. The other three structs will follow in the next versions.
 
 **Version 0.1.1** - competed the associated functions for all initiations and conversions of the four set structs.
 
