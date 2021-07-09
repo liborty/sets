@@ -95,11 +95,11 @@ impl<T> OrderedSet<T> {
         OrderedSet{ ascending:false, v: s.to_vec() }
     }
 
-    /// Initiliser, explicitly sorts an unordered slice
+    /// Initialiser, explicitly sorts an unordered slice
     pub fn from_slice(s: &[T], asc: bool) -> Self where T:PartialOrd+Copy {
         OrderedSet{ ascending:asc, v: sortm(s,asc) }
     }
-    /// Initiliser, explicitly sorts an unordered Set
+    /// Initialiser, explicitly sorts an unordered Set
     pub fn from_set(s: &Set<T>, asc: bool) -> Self where T:PartialOrd+Copy {
         OrderedSet{ ascending:asc, v: sortm(&s.v,asc) }
     }
@@ -135,12 +135,12 @@ impl<'a,T: std::fmt::Display> std::fmt::Display for IndexedSet<T> where T:Copy {
 }
 
 impl<'a,T> IndexedSet<T> {
-    /// Initiliser, indexsorts an unordered slice
+    /// Initialiser, indexsorts an unordered slice
     pub fn from_slice(s: &'a[T], asc:bool) -> Self where T:PartialOrd+Copy {
         if asc { IndexedSet{ ascending:true, v:s.to_vec(), i:sortidx(s) } }
         else { IndexedSet{ ascending:false, v:s.to_vec(), i:sortidx(s).revindex() } }
     }
-    /// Initiliser, indexsorts an unordered Set
+    /// Initialiser, indexsorts an unordered Set
     pub fn from_set(s: &'a Set<T>, asc: bool) -> Self where T:PartialOrd+Copy {
         if asc { IndexedSet{ ascending:true, v:s.v.to_vec(), i:sortidx(&s.v) } }
         else { IndexedSet{ ascending:false, v:s.v.to_vec(), i:sortidx(&s.v).revindex() } }     
@@ -179,11 +179,11 @@ impl<'a,T: std::fmt::Display> std::fmt::Display for RankedSet<T> where T:Copy {
     }
 }
 impl<T> RankedSet<T> {
-    /// Initiliser, ranks an unordered slice
+    /// Initialiser, ranks an unordered slice
     pub fn from_slice(s: &[T], asc:bool) -> Self where T:PartialOrd+Copy {
         RankedSet{ ascending:asc, v:s.to_vec(), i:rank(s,asc) }
     }
-    /// Initiliser, ranks an unordered Set
+    /// Initialiser, ranks an unordered Set
     pub fn from_set(s: &Set<T>, asc: bool) -> Self where T:PartialOrd+Copy {
         RankedSet{ ascending:asc, v:s.v.to_vec(), i:rank(s,asc) } 
     }        
