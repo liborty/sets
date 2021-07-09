@@ -18,11 +18,11 @@ See tests/tests.rs for examples of usage.
 
 `Sets` consists mostly of structs `Set, OrderedSet, IndexedSet, RankedSet`, which are type-safe wrappers for the more primitive imported functions and methods of crate `indxvec`.
 
-The main capabilities of `sets` include: efficient sorting, ranking, merging, searching and indices manipulations. The structs contain generic vectors `Vec<T>` and/or generic slices `&[T]`. Thus they will work with vectors/slices of primitive types but also on any arbitrarily complex end type `T`, as long as the required traits `PartialOrd` and `Copy`, are implemented for `T`.
+The main capabilities of `sets` include: efficient sorting, ranking, merging, searching and indices manipulations. The structs contain generic vectors `Vec<T>`. Thus they will work with vectors/slices of primitive types but also on any arbitrarily complex end type `T`, as long as the required traits `PartialOrd` and `Copy`, are implemented for `T`.
 
 ## Trait SetOps
 
-Implements methods: `reverse, nonrepeat, infsup, member, search, union, intersection, difference`, for all four types of sets. Generally speaking, these methods are more efficient  for the ordered and especially indexed sets, rather than for the unordered sets. For example, `member` and `search` are then able to use binary search. Union is like the classical merge but with removed duplications across the sets.
+Implements methods: `reverse, nonrepeat, infsup, member, search, union, intersection, difference`, for all four types of sets. Some of these methods are more efficient for the ordered and indexed sets, rather than for the unordered sets. For example, `member` and `search` are then able to use binary search. Union is like the classical merge but only one copy is kept of items that were duplicated in both input sets.
 
 ## Release Notes (Latest First)
 
