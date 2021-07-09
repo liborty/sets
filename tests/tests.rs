@@ -38,6 +38,24 @@ fn settest() -> () {
    let us = setw.union(&setv);
    println!("Union-> {}",&us);
    println!("Intersection-> {}",setw.intersection(&setv));
-   println!("Difference-> {}",setw.difference(&setv));
+   println!("Difference-> {}",setv.difference(&setw));
+   ()
+}
+
+#[test]
+fn textest() -> () { 
+   let v = ["It", "never", "rains", "on", "the", "plains", "of", "Spain"];   
+   let setv = RankedSet::from_slice(&v,false);  
+   println!("{}",setv); // Display of Set
+   println!("Reverse-> {}",setv.reverse()); 
+   println!("Nonrepeat-> {}",setv.nonrepeat()); // Display of Set    
+   println!("Is {} a member? {}\n",wi(&"Spain"),wi(&setv.member("Spain"))); 
+   println!("Infsup: {}",wt(&setv.infsup()));
+   let setw = RankedSet::from_slice(&["but", "it", "rains", "on", "all", "the", "other", "plains"],true);
+   println!("{}",setw);
+   let us = setw.union(&setv);
+   println!("Union-> {}",&us);
+   println!("Intersection-> {}",setw.intersection(&setv));
+   println!("Difference-> {}",setv.difference(&setw));
    ()
 }

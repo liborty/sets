@@ -8,7 +8,6 @@ use indxvec::{wv,Indices,merge::*};
 
 /// Unordered set holding a generic Vec<T>. 
 /// Usually is the initial input.
-// #[derive(Clone, PartialEq, Eq)]
 pub struct Set<T> {
     pub v: Vec<T>
 } 
@@ -56,7 +55,7 @@ impl<T> Set<T> where T: Copy {
 }
 
 /// Ordered Set, holding an explicitly sorted (ascending or descending) generic Vec<T>. 
-/// Often is the output of some process.
+/// Often is the final result of some set operations.
 pub struct OrderedSet<T> {
     pub ascending: bool,
     pub v: Vec<T>,
@@ -116,7 +115,7 @@ impl<T> OrderedSet<T> {
     }
 }
 
-/// Struct holding a borrowed unordered set and its sort index. 
+/// Struct holding an unordered set and its sort index. 
 /// Thus it is an index ordered set (ascending or descending).
 pub struct IndexedSet<T> {
     pub ascending: bool,
@@ -162,7 +161,7 @@ impl<'a,T> IndexedSet<T> {
     }
 }
 
-/// Struct holding a borrowed unordered set 
+/// Struct holding an unordered set 
 /// and a vector of its ranks (ascending or descending).
 pub struct RankedSet<T> {
     pub ascending: bool,
@@ -203,7 +202,7 @@ impl<T> RankedSet<T> {
     }
 }
 
-/// Methods for the set structs.
+/// Common methods for all four of the set structs.
 pub trait SetOps<T> where T: Copy {
     /// reverses the vector of explicit sets and index of indexed sets
     fn reverse(&self) -> Self where T: PartialOrd+Copy;

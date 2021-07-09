@@ -24,7 +24,7 @@ The main capabilities of `sets` include: efficient sorting, ranking, merging, se
 
 Implements methods:  
 `reverse, nonrepeat, infsup, member, search, union, intersection, difference`,  
-for all four types of sets. Some of these methods are more efficient for the ordered and indexed sets, rather than for the unordered sets. For example, `member` and `search` are then able to use binary search. Union is like the classical merge but only one copy of items that were present in both input sets is kept. To remove repetitions within a set, use `nonrepeat`.
+for all four types of sets. Some of these methods are more efficient for the ordered and indexed sets, rather than for the unordered sets. For example, `member` and `search` are then able to use binary search. Union is like the classical merge but only one copy of items that were present in both input sets is kept. To remove repetitions from a set, use `nonrepeat`.
 
 ## Release Notes (Latest First)
 
