@@ -27,13 +27,13 @@ fn conversions() -> () {
 #[test]
 fn settest() -> () { 
    let v = vec![1.,14.,2.,13.,3.,12.,4.,11.,5.,10.,10.,6.,9.,7.,8.,16.];   
-   let setv = OrderedSet::from_slice(&v,false);  
+   let setv = IndexedSet::from_slice(&v,false);  
    println!("{}",setv); // Display of Set
    println!("Reverse-> {}",setv.reverse()); 
    println!("Nonrepeat-> {}",setv.nonrepeat()); // Display of Set    
    println!("Is {} a member? {}\n",wi(&0.0),wi(&setv.member(0.0))); 
    println!("Infsup: {}",wt(&setv.infsup()));
-   let setw = OrderedSet::from_slice(&[20.,19.,18.,17.,16.,15.],true);
+   let setw = IndexedSet::from_slice(&[20.,19.,18.,17.,16.,15.],true);
    println!("{}",setw);
    let us = setw.union(&setv);
    println!("Union-> {}",&us);

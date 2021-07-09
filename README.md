@@ -2,36 +2,31 @@
 
 ## Usage
 
-Insert into your Cargo.toml file [dependencies] section:
+Insert into your Cargo.toml file [dependencies] section: `sets = "^0.1"`  
+Import into your source file(s) the structs and trait:  
+>```use sets::{Set,OrderedSet,IndexedSet,RankedSet,SetOps};```
 
-```rust
-sets = "^0.1" 
-```
+The initialisers and conversions are associated with their structs. Thus they are called, e.g.:  
+> ```let s = Set::from_slice(&v);```
 
-Import into your source file(s) macro `here`, structs and functions, as needed.
-  
-```rust
-use sets::{here,Set,OrderedSet,IndexedSet,RankedSet,SetOps};
-```
+The rest are methods of the trait SetOps, for example:  
+> `let su = s.nonrepeat(); // new set with unique elements`
 
 See tests/tests.rs for examples of usage. 
 
 ## Description
 
-`Sets` consists mostly of structs `Set, OrderedSet, IndexedSet, RankedSet` , which are type-safe wrappers for the more primitive functions and methods of crate `indxvec`.
+`Sets` consists mostly of structs `Set, OrderedSet, IndexedSet, RankedSet`, which are type-safe wrappers for the more primitive imported functions and methods of crate `indxvec`.
 
-The main capabilities of `sets` include: efficient sorting, ranking, merging, searching and indices manipulations. More set operations will be added in future releases. The structs contain generic vectors `Vec<T>` and/or generic slices `&[T]`. Thus they will work with vectors/slices of primitive types but also on any arbitrarily complex end type `T`. As long as the required traits, mostly just `PartialOrd` and `Copy`, are implemented for `T`.
-
-## Functions
-
-The initiation and conversion functions are associated with their structs: `Set, OrderedSet, IndexedSet, RankedSet`. Thus they need to be called as in: ```Set::from_slice(&v);```  
-Some additional helper functions are in the module `src/functions.rs`.
+The main capabilities of `sets` include: efficient sorting, ranking, merging, searching and indices manipulations. The structs contain generic vectors `Vec<T>` and/or generic slices `&[T]`. Thus they will work with vectors/slices of primitive types but also on any arbitrarily complex end type `T`, as long as the required traits `PartialOrd` and `Copy`, are implemented for `T`.
 
 ## Trait SetOps
 
-Implements set operations: `nonrepeat, infsup, member, search, union, intersection, diference` for all four types of sets. Generally speaking, these are faster (more efficient) for the ordered and especially indexed sets, rather than for the unordered sets. For example, `member` is then able to use the binary search.
+Implements methods: `reverse, nonrepeat, infsup, member, search, union, intersection, difference`, for all four types of sets. Generally speaking, these methods are more efficient  for the ordered and especially indexed sets, rather than for the unordered sets. For example, `member` and `search` are then able to use binary search. Union is like the classical merge but with removed duplications across the sets.
 
 ## Release Notes (Latest First)
+
+**Version 0.1.4** - updated readme, implemented `SetOps` for `IndexedSet`.
 
 **Version 0.1.3** - fixed readme typos, improved tests, implemented `SetOps` for `OrderedSet`.
 
