@@ -221,3 +221,16 @@ pub trait SetOps<T> where T: Copy {
     /// Removing s from self (i.e. self-s)
     fn difference(&self, s: &Self) -> OrderedSet<T> where T: PartialOrd;
 }
+pub trait MutSetOps<T> where T: Copy {
+    /// reverses the vector of explicit sets and index of indexed sets
+    fn reverse(&mut self);
+    /// Deletes any repetitions
+    fn nonrepeat(&mut self); 
+    /// Union of two sets of the same type
+    fn union(&mut self, s: &Self);
+    /// Intersection of two sets of the same type
+    fn intersection(&mut self, s: &Self);
+    /// Removing s from self (i.e. self-s)
+    fn difference(&mut self, s: &Self);
+}
+
