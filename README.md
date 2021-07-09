@@ -4,27 +4,31 @@
 
 Insert into your Cargo.toml file [dependencies] section: `sets = "^0.1"`  
 Import into your source file(s) the structs and trait:  
->```use sets::{Set,OrderedSet,IndexedSet,RankedSet,SetOps};```
+```use sets::{Set,OrderedSet,IndexedSet,RankedSet,SetOps};```
 
-The initialisers and conversions are associated with their structs. Thus they are called, e.g.:  
-> ```let s = Set::from_slice(&v);```
+The initialisers and conversions are associated with their structs, e.g.:  
+```let s = Set::from_slice(&v);```
 
-The rest are methods of the trait SetOps, for example:  
-> `let su = s.nonrepeat(); // new set with unique elements`
+The rest are methods of the trait SetOps, e.g.:  
+`let su = s.nonrepeat(); // new set with unique elements`
 
-See tests/tests.rs for examples of usage. 
+See tests/tests.rs for example usage.
 
 ## Description
 
-`Sets` consists mostly of structs `Set, OrderedSet, IndexedSet, RankedSet`, which are type-safe wrappers for the more primitive imported functions and methods of crate `indxvec`.
+Crate `sets` consists mostly of structs `Set, OrderedSet, IndexedSet, RankedSet`, which are type-safe wrappers for the more primitive imported functions and methods from crate `indxvec`.
 
 The main capabilities of `sets` include: efficient sorting, ranking, merging, searching and indices manipulations. The structs contain generic vectors `Vec<T>`. Thus they will work with vectors/slices of primitive types but also on any arbitrarily complex end type `T`, as long as the required traits `PartialOrd` and `Copy`, are implemented for `T`.
 
 ## Trait SetOps
 
-Implements methods: `reverse, nonrepeat, infsup, member, search, union, intersection, difference`, for all four types of sets. Some of these methods are more efficient for the ordered and indexed sets, rather than for the unordered sets. For example, `member` and `search` are then able to use binary search. Union is like the classical merge but only one copy is kept of items that were duplicated in both input sets.
+Implements methods:  
+`reverse, nonrepeat, infsup, member, search, union, intersection, difference`,  
+for all four types of sets. Some of these methods are more efficient for the ordered and indexed sets, rather than for the unordered sets. For example, `member` and `search` are then able to use binary search. Union is like the classical merge but only one copy of items that were present in both input sets is kept. To remove repetitions within a set, use `nonrepeat`.
 
 ## Release Notes (Latest First)
+
+**Version 0.1.5** - implemented `SetOps` for `RankedSet`, making the implementations now complete. Future work: adding  mutable sets.
 
 **Version 0.1.4** - updated readme, implemented `SetOps` for `IndexedSet`.
 
