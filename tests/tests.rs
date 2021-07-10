@@ -3,7 +3,7 @@
 #[cfg(test)]
 
 // use anyhow::{Result};
-use sets::{Set,OrderedSet,IndexedSet,RankedSet,SetOps};
+use sets::{Set,OrderedSet,IndexedSet,RankedSet,SetOps,MutSetOps};
 use indxvec::{wi,wt,Indices,merge::*};
 
 #[test]
@@ -15,7 +15,7 @@ fn conversions() -> () {
    println!("Set-> {}",OrderedSet::from_set(&setv,false)); // descending sorted data, index lost  
    let ix = IndexedSet::from_set(&setv,false);    
    println!("Set-> {}",&ix); 
-   println!("Indexed-> {}",OrderedSet::from_indexed(&ix,true));
+   println!("Indexed-> {}",OrderedSet::from_indexed(&ix,false));
    let rx = RankedSet::from_slice(&v,false);
    println!("Slice->{}",&rx);
    println!("Ranked->{}",IndexedSet::from_ranked(&rx,true)); 
@@ -43,15 +43,34 @@ fn settest() -> () {
 }
 
 #[test]
-fn textest() -> () { 
-   let v = ["It", "never", "rains", "on", "the", "plains", "of", "Spain"];   
-   let setv = RankedSet::from_slice(&v,false);  
+fn mutabletest() -> () { 
+    let v = vec![1.,14.,2.,13.,3.,12.,4.,11.,5.,10.,10.,6.,9.,7.,8.,16.];   
+    let mut setv = RankedSet::from_slice(&v,false);  
+    println!("{}",setv); // Display of Set 
+    let mut setw = RankedSet::from_slice(&[20.,19.,18.,17.,16.,15.],true);
+    println!("{}",setw);
+    setw.munion(&setv);
+    println!("Union-> {}",&setw);
+    setv.mintersection(&setw);
+    println!("Intersection-> {}",&setv);
+    setw.mdifference(&setv);
+    println!("Difference-> {}",&setw);
+    ()
+ }
+ 
+#[test]
+fn nlptest() -> () { 
+   let sentence1 = "Alphabetic ordering puts capital Letters first.";
+   let sentence2 = "It sorts by Letters, ordering by Letters"; 
+   let v1 = sentence1.split(' ').collect::<Vec<_>>();
+   let v2 = sentence2.split(' ').collect::<Vec<_>>();  
+   let setv = RankedSet::from_slice(&v1,false);  
    println!("{}",setv); // Display of Set
    println!("Reverse-> {}",setv.reverse()); 
    println!("Nonrepeat-> {}",setv.nonrepeat()); // Display of Set    
    println!("Is {} a member? {}\n",wi(&"Spain"),wi(&setv.member("Spain"))); 
    println!("Infsup: {}",wt(&setv.infsup()));
-   let setw = RankedSet::from_slice(&["but", "it", "rains", "on", "all", "the", "other", "plains"],true);
+   let setw = RankedSet::from_slice(&v2,true);
    println!("{}",setw);
    let us = setw.union(&setv);
    println!("Union-> {}",&us);

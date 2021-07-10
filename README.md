@@ -4,7 +4,7 @@
 
 Insert into your Cargo.toml file [dependencies] section: `sets = "^0.1"`  
 Import into your source file(s) the structs and trait:  
-```use sets::{Set,OrderedSet,IndexedSet,RankedSet,SetOps};```
+```use sets::{Set,OrderedSet,IndexedSet,RankedSet,SetOps,MutSetOps};```
 
 The initialisers and conversions are associated with their structs, e.g.:  
 ```let s = Set::from_slice(&v);```
@@ -23,10 +23,20 @@ The main capabilities of `sets` include: efficient sorting, ranking, merging, se
 ## Trait SetOps
 
 Implements methods:  
-`reverse, nonrepeat, infsup, member, search, union, intersection, difference`,  
+`reverse, nonrepeat, infsup, member, search, union, intersection, difference`,    
 for all four types of sets. Some of these methods are more efficient for the ordered and indexed sets, rather than for the unordered sets. For example, `member` and `search` are then able to use binary search. Union is like the classical merge but only one copy of items that were present in both input sets is kept. To remove repetitions from a set, use `nonrepeat`.
 
+Union, interesection and difference applied to IndexedSet(s) or RankedSet(s) for now return only OrderedSet(s). Should this not be what is wanted, convert the result, or better still, use `munion, minteresection and mdifference`, (see below), which do not have this restriction.
+
+## Trait MutSetOps
+
+Implements methods:  
+`mreverse, mnonrepeat, munion, mintersection, mdifference`,  
+for all four types of sets. They overwrite the mutable set to which they are applied with the result. Thus they are not *functional* but in this context of handling potentially large vectors, they are in some cases simpler and more efficient.
+
 ## Release Notes (Latest First)
+
+**Version 0.1.6** - implemented `MutSetOps` for all set types and added some tests.
 
 **Version 0.1.5** - implemented `SetOps` for `RankedSet`, making the implementations now complete. Future work: adding  mutable sets.
 

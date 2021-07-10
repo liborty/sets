@@ -1,10 +1,16 @@
 pub mod traitimpls;
+pub mod mutimpls;
 
 use std::ops::{Deref,DerefMut};
 use indxvec::{wv,Indices,merge::*};
 
 // const EMPTYIDX:Vec<usize> = vec![];
 
+/// Constructs a trivial index (for already sorted sets), 
+/// of required ascending or descending order and size
+pub fn trivindex(asc:bool,n:usize) -> Vec<usize> { 
+    if asc { (0..n).collect() } else { (0..n).rev().collect() }
+}
 
 /// Unordered set holding a generic Vec<T>. 
 /// Usually is the initial input.
@@ -44,6 +50,7 @@ impl<T> Set<T> where T: Copy {
     pub fn from_slice(s: &[T]) -> Self {
         Set { v: s.to_vec() }
     }
+ 
     /// Simply clones the slice and throws away its index
     pub fn from_indexed(s: &IndexedSet<T>) -> Self {
         Set{ v: s.v.to_vec() }
@@ -145,13 +152,11 @@ impl<'a,T> IndexedSet<T> {
         if asc { IndexedSet{ ascending:true, v:s.v.to_vec(), i:sortidx(&s.v) } }
         else { IndexedSet{ ascending:false, v:s.v.to_vec(), i:sortidx(&s.v).revindex() } }     
     }
-    /// From Oredered is not often needed, as the index will be trivial 
-    pub fn from_ordered(s: &'a OrderedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
-        let n = s.len();
+    /// From Oredered, the sort index will be trivial 
+    pub fn from_ordered(s: &'a OrderedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {    
         // construct trivial index for already ordered set
-        let mut idx:Vec<usize> = vec![0;s.len()];
-        if asc == s.ascending { for i in 0..n { idx[i] = i } }          
-        else { for i in (0..n).rev() { idx[i] = i } };
+        // if we are changing the order with asc, make it reversed
+        let idx = trivindex(asc == s.ascending,s.len());      
         IndexedSet{ ascending:asc, v:s.v.to_vec(), i:idx } 
     }
     /// Converts ranks to sort index
@@ -187,7 +192,7 @@ impl<T> RankedSet<T> {
     pub fn from_set(s: &Set<T>, asc: bool) -> Self where T:PartialOrd+Copy {
         RankedSet{ ascending:asc, v:s.v.to_vec(), i:rank(s,asc) } 
     }        
-    /// From Oredered is not often needed, as the index will be trivial 
+    /// From Ordered - the index will be trivial 
     pub fn from_ordered(s: &OrderedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
         let n = s.len();
         let mut idx:Vec<usize> = vec![0;n];
@@ -221,16 +226,16 @@ pub trait SetOps<T> where T: Copy {
     /// Removing s from self (i.e. self-s)
     fn difference(&self, s: &Self) -> OrderedSet<T> where T: PartialOrd;
 }
-pub trait MutSetOps<T> where T: Copy {
+pub trait MutSetOps<T> where T: Copy+PartialOrd {
     /// reverses the vector of explicit sets and index of indexed sets
-    fn reverse(&mut self);
+    fn mreverse(&mut self);
     /// Deletes any repetitions
-    fn nonrepeat(&mut self); 
+    fn mnonrepeat(&mut self); 
     /// Union of two sets of the same type
-    fn union(&mut self, s: &Self);
+    fn munion(&mut self, s: &Self);
     /// Intersection of two sets of the same type
-    fn intersection(&mut self, s: &Self);
+    fn mintersection(&mut self, s: &Self);
     /// Removing s from self (i.e. self-s)
-    fn difference(&mut self, s: &Self);
+    fn mdifference(&mut self, s: &Self);
 }
 
