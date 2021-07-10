@@ -1,4 +1,4 @@
-# Sets ![Crates.io](https://img.shields.io/crates/v/sets?logo=rust) ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/liborty/sets/HEAD?logo=github)  
+# Sets ![Crates.io](https://img.shields.io/crates/v/sets?logo=rust) ![Crates.io](https://img.shields.io/crates/d/sets?logo=rust) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/liborty/sets?label=commits&logo=github) ![GitHub last commit](https://img.shields.io/github/last-commit/liborty/sets?label=last&logo=github)
 
 ## Usage
 
