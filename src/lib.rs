@@ -208,25 +208,25 @@ impl<T> RankedSet<T> {
 }
 
 /// Common methods for all four of the set structs.
-pub trait SetOps<T> where T: Copy {
+pub trait SetOps<T> {
     /// reverses the vector of explicit sets and index of indexed sets
-    fn reverse(&self) -> Self where T: PartialOrd+Copy;
+    fn reverse(&self) -> Self;
     /// Deletes any repetitions
-    fn nonrepeat(&self) -> Self where T: PartialOrd+Copy;
+    fn nonrepeat(&self) -> Self;
     /// Finds minimum, minimum's first index, maximum, maximum's first index  
-    fn infsup(&self) -> (T, usize, T, usize) where T: PartialOrd+Copy; 
+    fn infsup(&self) -> (T, usize, T, usize); 
     /// True if m is a member of the set
     fn member(&self, m: T) -> bool where T: PartialOrd; 
     /// Search of a set, returns Some(index) of the last item found, or None.
-    fn search(&self, m: T)  -> Option<usize> where T: PartialOrd;    
+    fn search(&self, m: T)  -> Option<usize>;    
     /// Union of two sets of the same type
-    fn union(&self, s: &Self) -> OrderedSet<T> where T: PartialOrd;
+    fn union(&self, s: &Self) -> OrderedSet<T>;
     /// Intersection of two sets of the same type
-    fn intersection(&self, s: &Self) -> OrderedSet<T> where T: PartialOrd;
+    fn intersection(&self, s: &Self) -> OrderedSet<T>;
     /// Removing s from self (i.e. self-s)
-    fn difference(&self, s: &Self) -> OrderedSet<T> where T: PartialOrd;
+    fn difference(&self, s: &Self) -> OrderedSet<T>;
 }
-pub trait MutSetOps<T> where T: Copy+PartialOrd {
+pub trait MutSetOps<T> {
     /// reverses the vector of explicit sets and index of indexed sets
     fn mreverse(&mut self);
     /// Deletes any repetitions

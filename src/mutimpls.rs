@@ -1,7 +1,7 @@
 use crate::{trivindex,Set,OrderedSet,IndexedSet,RankedSet,MutSetOps};
 use indxvec::{Indices,merge::*};
 
-impl<T> MutSetOps<T> for Set<T> where T: Copy+PartialOrd {
+impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd {
 
     /// Reverses a vec by iterating over only half of its length
     /// and swapping the items
@@ -38,7 +38,7 @@ impl<T> MutSetOps<T> for Set<T> where T: Copy+PartialOrd {
     }    
 }
 
-impl<T> MutSetOps<T> for OrderedSet<T> where T: Copy+PartialOrd {
+impl<T> MutSetOps<T> for OrderedSet<T> where T:Copy+PartialOrd {
 
     /// Reverses a vec by iterating over only half of its length
     /// and swapping the items
