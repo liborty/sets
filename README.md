@@ -23,7 +23,7 @@ The main capabilities of `sets` include: efficient sorting, ranking, merging, se
 ## Trait SetOps
 
 Implements methods:  
-`reverse, nonrepeat, infsup, member, search, union, intersection, difference`,    
+`reverse, nonrepeat, infsup, member, search, union, intersection, difference`,  
 for all four types of sets. Some of these methods are more efficient for the ordered and indexed sets, rather than for the unordered sets. For example, `member` and `search` are then able to use binary search. Union is like the classical merge but only one copy of items that were present in both input sets is kept. To remove repetitions from a set, use `nonrepeat`.
 
 Union, interesection and difference applied to IndexedSet(s) or RankedSet(s) for now return only OrderedSet(s). Should this not be what is wanted, convert the result, or better still, use `munion, minteresection and mdifference`, (see below), which do not have this restriction.
