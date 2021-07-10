@@ -11,7 +11,7 @@ The initialisers and conversions are associated with their structs, e.g.:
 
 The rest are methods of the traits SetOps, and MutSetOps e.g.:  
 `let mut su = s.nonrepeat(); // new set with unique elements`  
-`su.mreverese; // transformed into the opposite order`  
+`su.mreverse; // transformed into the opposite order`  
 See tests/tests.rs for example usage.
 
 ## Description
