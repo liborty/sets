@@ -14,8 +14,11 @@ fn conversions() -> () {
    println!("Slice-> {}",OrderedSet::from_slice(&v,true)); // sorted data but index lost
    println!("Set-> {}",OrderedSet::from_set(&setv,false)); // descending sorted data, index lost  
    let ix = IndexedSet::from_set(&setv,false);    
-   println!("Set-> {}",&ix); 
-   println!("Indexed-> {}",OrderedSet::from_indexed(&ix,false));
+   println!("Set-> {}",&ix);
+   let ss = OrderedSet::from_indexed(&ix,false); 
+   println!("Indexed-> {}",ss); 
+   println!("Ordered-> {}",IndexedSet::from_ordered(&ss,false)); 
+   println!("Ordered-> {}",RankedSet::from_ordered(&ss,true)); 
    let rx = RankedSet::from_slice(&v,false);
    println!("Slice->{}",&rx);
    println!("Ranked->{}",IndexedSet::from_ranked(&rx,true)); 

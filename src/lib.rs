@@ -153,11 +153,8 @@ impl<'a,T> IndexedSet<T> {
         else { IndexedSet{ ascending:false, v:s.v.to_vec(), i:sortidx(&s.v).revindex() } }     
     }
     /// From Oredered, the sort index will be trivial 
-    pub fn from_ordered(s: &'a OrderedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {    
-        // construct trivial index for already ordered set
-        // if we are changing the order with asc, make it reversed
-        let idx = trivindex(asc == s.ascending,s.len());      
-        IndexedSet{ ascending:asc, v:s.v.to_vec(), i:idx } 
+    pub fn from_ordered(s: &'a OrderedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {        
+        IndexedSet{ ascending:asc, v:s.v.to_vec(), i:trivindex(asc == s.ascending,s.len()) } 
     }
     /// Converts ranks to sort index
     pub fn from_ranked(s: &'a RankedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
@@ -193,12 +190,8 @@ impl<T> RankedSet<T> {
         RankedSet{ ascending:asc, v:s.v.to_vec(), i:rank(s,asc) } 
     }        
     /// From Ordered - the index will be trivial 
-    pub fn from_ordered(s: &OrderedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
-        let n = s.len();
-        let mut idx:Vec<usize> = vec![0;n];
-        if asc == s.ascending { for i in 0..n { idx[i] = i } }          
-        else { for i in 0..n { idx[i] = n-i-1 } };
-        RankedSet{ ascending:asc, v:s.v.to_vec(), i:idx } 
+    pub fn from_ordered(s: &OrderedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {       
+        RankedSet{ ascending:asc, v:s.v.to_vec(), i:trivindex(asc == s.ascending,s.len()) } 
     }
     /// Converts sort index to ranks
     pub fn from_indexed(s: &IndexedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
@@ -216,7 +209,7 @@ pub trait SetOps<T> {
     /// Finds minimum, minimum's first index, maximum, maximum's first index  
     fn infsup(&self) -> (T, usize, T, usize); 
     /// True if m is a member of the set
-    fn member(&self, m: T) -> bool where T: PartialOrd; 
+    fn member(&self, m: T) -> bool;
     /// Search of a set, returns Some(index) of the last item found, or None.
     fn search(&self, m: T)  -> Option<usize>;    
     /// Union of two sets of the same type
@@ -238,4 +231,3 @@ pub trait MutSetOps<T> {
     /// Removing s from self (i.e. self-s)
     fn mdifference(&mut self, s: &Self);
 }
-
