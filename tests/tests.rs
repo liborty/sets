@@ -35,7 +35,7 @@ fn settest() -> () {
    println!("Reverse-> {}",setv.reverse()); 
    println!("Nonrepeat-> {}",setv.nonrepeat()); // Display of Set    
    println!("Is {} a member? {}\n",wi(&0.0),wi(&setv.member(0.0))); 
-   println!("Infsup: {}",wt(&setv.infsup()));
+   println!("Infsup: {}",setv.infsup());
    let setw = RankedSet::from_slice(&[20.,19.,18.,17.,16.,15.],true);
    println!("{}",setw);
    let us = setw.union(&setv);
@@ -72,7 +72,7 @@ fn nlptest() -> () {
    println!("Reverse-> {}",setv.reverse()); 
    println!("Nonrepeat-> {}",setv.nonrepeat()); // Display of Set    
    println!("Is {} a member? {}\n",wi(&"Spain"),wi(&setv.member("Spain"))); 
-   println!("Infsup: {}",wt(&setv.infsup()));
+   println!("Infsup: {}",setv.infsup());
    let setw = RankedSet::from_slice(&v2,true);
    println!("{}",setw);
    let us = setw.union(&setv);

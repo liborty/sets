@@ -1,5 +1,5 @@
 use crate::{SetOps,Set,OrderedSet,IndexedSet,RankedSet};
-use indxvec::{Indices,merge::*};
+use indxvec::{MinMax,Indices,merge::*};
 
 impl<T> SetOps<T> for Set<T> where T:Copy+PartialOrd {
 
@@ -13,9 +13,8 @@ impl<T> SetOps<T> for Set<T> where T:Copy+PartialOrd {
     }
 
     /// Finds minimum, minimum's first index, maximum, maximum's first index of &[T] 
-    fn infsup(&self) -> (T, usize, T, usize)  {
-        let (min,mini,max,maxi) = minmax(&self.v);
-        (min,mini,max,maxi)  
+    fn infsup(&self) -> MinMax<T> {
+        minmax(&self.v) 
     }
 
     /// True if m is a member of the set
@@ -65,10 +64,10 @@ impl<T> SetOps<T> for OrderedSet<T> where T: Copy+PartialOrd {
 
     /// Finds minimum, minimum's first index, maximum, maximum's first index
     /// Much simpler for OrderedSet than for Set.
-    fn infsup(&self) -> (T, usize, T, usize) {
+    fn infsup(&self) -> MinMax<T> {
         let last = self.v.len()-1;
-        if self.ascending { (self.v[0],0,self.v[last],last) }
-        else { (self.v[last],last,self.v[0],0) }
+        if self.ascending { MinMax{min:self.v[0],minindex:0,max:self.v[last],maxindex:last} }
+        else { MinMax{min:self.v[last],minindex:last,max:self.v[0],maxindex:0} }
     }
 
     /// True if m is a member of the set
@@ -137,12 +136,12 @@ impl<T> SetOps<T> for IndexedSet<T> where T: Copy+PartialOrd {
     }
  
     /// Finds minimum, minimum's first index, maximum, maximum's first index
-    fn infsup(&self) -> (T, usize, T, usize) {
+    fn infsup(&self) -> MinMax<T> {
         let last = self.v.len()-1;
         let firstval = self.v[self.i[0]];
         let lastval = self.v[self.i[last]];
-        if self.ascending { (firstval,self.i[0],lastval,self.i[last]) }
-        else { (lastval,self.i[last],firstval,self.i[0]) }
+        if self.ascending { MinMax{min:firstval,minindex:self.i[0],max:lastval,maxindex:self.i[last]} }
+        else { MinMax{min:lastval,minindex:self.i[last],max:firstval,maxindex:self.i[0]} }
     }
     
     /// True if m is a member of the set
@@ -205,13 +204,13 @@ impl<T> SetOps<T> for RankedSet<T> where T: Copy+PartialOrd {
     }
      
     /// Finds minimum, minimum's first index, maximum, maximum's first index
-    fn infsup(&self) -> (T, usize, T, usize) {
+    fn infsup(&self) -> MinMax<T> {
         let last = self.v.len()-1;
         let si = self.i.invindex(); // ranks -> sort index
         let firstval = self.v[si[0]];
         let lastval = self.v[si[last]];
-            if self.ascending { (firstval,si[0],lastval,si[last]) }
-            else { (lastval,si[last],firstval,si[0]) }
+            if self.ascending { MinMax{min:firstval,minindex:si[0],max:lastval,maxindex:si[last]} }
+            else { MinMax{min:lastval,minindex:si[last],max:firstval,maxindex:si[0]} }
         }
         
     /// True if m is a member of the set

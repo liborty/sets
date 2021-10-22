@@ -2,7 +2,7 @@ pub mod traitimpls;
 pub mod mutimpls;
 
 use std::ops::{Deref,DerefMut};
-use indxvec::{wv,Indices,merge::*};
+use indxvec::{MinMax,wv,Indices,merge::*};
 
 // const EMPTYIDX:Vec<usize> = vec![];
 
@@ -207,7 +207,7 @@ pub trait SetOps<T> {
     /// Deletes any repetitions
     fn nonrepeat(&self) -> Self;
     /// Finds minimum, minimum's first index, maximum, maximum's first index  
-    fn infsup(&self) -> (T, usize, T, usize); 
+    fn infsup(&self) -> MinMax<T>; 
     /// True if m is a member of the set
     fn member(&self, m: T) -> bool;
     /// Search of a set, returns Some(index) of the last item found, or None.

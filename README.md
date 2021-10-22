@@ -36,6 +36,8 @@ for all four types of sets. They overwrite the mutable set to which they are app
 
 ## Release Notes (Latest First)
 
+**Version 0.1.8** - 'infsup' now returns struct MinMax (defined in crate 'indxvec').
+
 **Version 0.1.7** - just some cosmetic cleaning up. No change of functionality from the previous version.
 
 **Version 0.1.6** - implemented `MutSetOps` for all set types and added some tests.
