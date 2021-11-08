@@ -1,9 +1,15 @@
-# Sets ![Crates.io](https://img.shields.io/crates/v/sets?logo=rust) ![Crates.io](https://img.shields.io/crates/d/sets?logo=rust) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/liborty/sets?label=commits&logo=github) ![GitHub last commit](https://img.shields.io/github/last-commit/liborty/sets?label=last&logo=github)
+# Sets ![GitHub last commit](https://img.shields.io/github/last-commit/liborty/sets?logo=github)
+
+[<img alt="github" src="https://img.shields.io/badge/github-liborty/sets-8da0cb?style=for-the-badge&labelColor=555555&logo=github" height="20">](https://github.com/liborty/sets)
+[<img alt="crates.io" src="https://img.shields.io/crates/v/sets.svg?style=for-the-badge&color=fc8d62&logo=rust" height="20">](https://crates.io/crates/sets)
+[<img alt="crates.io" src="https://img.shields.io/crates/d/sets?logo=rust">](https://crates.io/crates/sets)
+[<img alt="docs.rs" src="https://img.shields.io/badge/docs.rs-sets-66c2a5?style=for-the-badge&labelColor=555555&logoColor=white&logo=data:image/svg+xml;base64,PHN2ZyByb2xlPSJpbWciIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDUxMiA1MTIiPjxwYXRoIGZpbGw9IiNmNWY1ZjUiIGQ9Ik00ODguNiAyNTAuMkwzOTIgMjE0VjEwNS41YzAtMTUtOS4zLTI4LjQtMjMuNC0zMy43bC0xMDAtMzcuNWMtOC4xLTMuMS0xNy4xLTMuMS0yNS4zIDBsLTEwMCAzNy41Yy0xNC4xIDUuMy0yMy40IDE4LjctMjMuNCAzMy43VjIxNGwtOTYuNiAzNi4yQzkuMyAyNTUuNSAwIDI2OC45IDAgMjgzLjlWMzk0YzAgMTMuNiA3LjcgMjYuMSAxOS45IDMyLjJsMTAwIDUwYzEwLjEgNS4xIDIyLjEgNS4xIDMyLjIgMGwxMDMuOS01MiAxMDMuOSA1MmMxMC4xIDUuMSAyMi4xIDUuMSAzMi4yIDBsMTAwLTUwYzEyLjItNi4xIDE5LjktMTguNiAxOS45LTMyLjJWMjgzLjljMC0xNS05LjMtMjguNC0yMy40LTMzLjd6TTM1OCAyMTQuOGwtODUgMzEuOXYtNjguMmw4NS0zN3Y3My4zek0xNTQgMTA0LjFsMTAyLTM4LjIgMTAyIDM4LjJ2LjZsLTEwMiA0MS40LTEwMi00MS40di0uNnptODQgMjkxLjFsLTg1IDQyLjV2LTc5LjFsODUtMzguOHY3NS40em0wLTExMmwtMTAyIDQxLjQtMTAyLTQxLjR2LS42bDEwMi0zOC4yIDEwMiAzOC4ydi42em0yNDAgMTEybC04NSA0Mi41di03OS4xbDg1LTM4Ljh2NzUuNHptMC0xMTJsLTEwMiA0MS40LTEwMi00MS40di0uNmwxMDItMzguMiAxMDIgMzguMnYuNnoiPjwvcGF0aD48L3N2Zz4K" height="20">](https://docs.rs/sets/)
 
 ## Usage
 
 Insert into your Cargo.toml file [dependencies] section: `sets = "^0.1"`  
-Import into your source file(s) the structs and trait:  
+Import into your source file(s) the structs and traits `SetOps` and `MutSetOps`. The following imports everything:
+
 ```use sets::{Set,OrderedSet,IndexedSet,RankedSet,SetOps,MutSetOps};```
 
 The initialisers and conversions are associated with their structs, e.g.:  
@@ -11,8 +17,9 @@ The initialisers and conversions are associated with their structs, e.g.:
 
 The rest are methods of the traits SetOps, and MutSetOps e.g.:  
 `let mut su = s.nonrepeat(); // new set with unique elements`  
-`su.mreverse; // transformed into the opposite order`  
-See tests/tests.rs for example usage.
+`su.mreverse; // transformed into the opposite order` 
+
+It is highly recommended that you read `tests/tests.rs` for examples of usage.
 
 ## Description
 
@@ -22,21 +29,21 @@ The main capabilities of `sets` include: efficient sorting, ranking, merging, se
 
 ## Trait SetOps
 
-Implements methods:  
-`reverse, nonrepeat, infsup, member, search, union, intersection, difference`,  
-for all four types of sets. Some of these methods are more efficient for the ordered and indexed sets, rather than for the unordered sets. For example, `member` and `search` are then able to use binary search. Union is like the classical merge but only one copy of items that were present in both input sets is kept. To remove repetitions from a set, use `nonrepeat`.
+Implements these methods for all four types of sets (structs):  
+`reverse, nonrepeat, infsup, member, search, union, intersection, difference`.  
+ Some of these methods are more efficient for the ordered and indexed sets, rather than for the unordered sets. For example, `member` and `search` are then able to use binary search. Union is like the classical merge but only one copy of items that were present in both input sets is kept. To remove repetitions from a set in general, use `nonrepeat`.
 
-Union, interesection and difference applied to IndexedSet(s) or RankedSet(s) for now return only OrderedSet(s). Should this not be what is wanted, convert the result, or better still, use `munion, minteresection and mdifference`, (see below), which do not have this restriction.
+`Union`, `interesection` and `difference` when applied to IndexedSet(s) and RankedSet(s) return an OrderedSet as a result. When necessary, this can be explicitly converted to other types of sets. Alternatively, `munion, minteresection and mdifference`, (where 'm' stands for 'mutable', see below), will overwrite `self` with the resulting set of the same type.
 
 ## Trait MutSetOps
 
-Implements methods:  
-`mreverse, mnonrepeat, munion, mintersection, mdifference`,  
-for all four types of sets. They overwrite the mutable set to which they are applied with the result. Thus they are not *functional* but in this context of handling potentially large vectors, they are in some cases simpler and more efficient.
+Implements these methods for all four types of sets:  
+`mreverse, mnonrepeat, munion, mintersection, mdifference`.  
+They overwrite the mutable set to which they are applied with the result. Thus they are not *functional* but in this context of handling potentially large vectors, they are in some cases simpler and more efficient.
 
 ## Release Notes (Latest First)
 
-**Version 0.1.8** - 'infsup' now returns struct MinMax (defined in crate 'indxvec').
+**Version 0.1.8** - 'infsup' now returns struct MinMax (defined in crate 'sets').
 
 **Version 0.1.7** - just some cosmetic cleaning up. No change of functionality from the previous version.
 
