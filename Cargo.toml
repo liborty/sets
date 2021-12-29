@@ -1,8 +1,8 @@
 [package]
 name = "sets"
-version = "0.1.8"
+version = "1.0.0"
 authors = ["Libor Spacek"]
-edition = "2018"
+edition = "2021"
 description = "Sets implemented as generic vectors. Efficiently sorting, merging, ranking, searching, reversing, intersecting, etc."
 readme = "README.md"
 homepage = "https://github.com/liborty/sets"
@@ -21,5 +21,4 @@ include = [
 maintenance = { status = "actively-developed" }
 [lib]
 [dependencies]
-indxvec = "^0.2"
-# anyhow = "^1"
+indxvec = "^1"
