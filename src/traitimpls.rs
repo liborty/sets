@@ -30,22 +30,22 @@ impl<T> SetOps<T> for Set<T> where T:Copy+PartialOrd {
 
     /// Union of two unordered sets of the same type - 
     fn union(&self, s: &Self) -> OrderedSet<T>  {
-        let s1 = sortm(&self,true);
-        let s2 = sortm(&s,true);
+        let s1 = sortm(self,true);
+        let s2 = sortm(s,true);
         OrderedSet { ascending:true,v:unite(&s1,&s2) }
     }
 
     /// Intersection of two sets of the same type
     fn intersection(&self, s: &Self) -> OrderedSet<T>  {
-        let s1 = sortm(&self,true);
-        let s2 = sortm(&s,true);
+        let s1 = sortm(self,true);
+        let s2 = sortm(s,true);
         OrderedSet { ascending:true,v:intersect(&s1,&s2) }
     }
 
     /// Complement of s in self (i.e. self-s)
     fn difference(&self, s: &Self) -> OrderedSet<T>  {
-        let s1 = sortm(&self,true);
-        let s2 = sortm(&s,true); 
+        let s1 = sortm(self,true);
+        let s2 = sortm(s,true); 
         OrderedSet { ascending:true,v:diff(&s1,&s2) } 
     }
     
@@ -83,40 +83,28 @@ impl<T> SetOps<T> for OrderedSet<T> where T: Copy+PartialOrd {
         else { memsearchdesc(&self.v,m) }        
     }
 
-    /// Union of two ordered sets of the same type - 
+    /// Union of two ordered sets  
     fn union(&self, s: &Self) -> OrderedSet<T> { 
-        if self.ascending {
-            if s.ascending {  OrderedSet { ascending:true, v:unite(&self.v,&s.v) } }
-            else { OrderedSet { ascending:true, v:unite(&self.v, &revs(&s.v)) } }
-        }
-        else {
-            if s.ascending {  OrderedSet { ascending:true, v:unite(&revs(&self.v),&s.v) } }
-            else { OrderedSet { ascending:true, v:unite(&revs(&self.v), &revs(&s.v)) } } 
-        }
-    }      
+        let rself; let rs; 
+        OrderedSet { ascending:true, v:unite(
+            if self.ascending {&self.v} else {rself = revs(&self.v); &rself},
+            if s.ascending {&s.v} else {rs = revs(&s.v); &rs}) } 
+    } 
 
     /// Intersection of two sets of the same type
     fn intersection(&self, s: &Self) -> OrderedSet<T> {
-        if self.ascending {
-            if s.ascending {  OrderedSet { ascending:true, v:intersect(&self.v,&s.v) } }
-            else { OrderedSet { ascending:true, v:intersect(&self.v, &revs(&s.v)) } }
-        }
-        else {
-            if s.ascending {  OrderedSet { ascending:true, v:intersect(&revs(&self.v),&s.v) } }
-            else { OrderedSet { ascending:true, v:intersect(&revs(&self.v), &revs(&s.v)) } } 
-        }
+        let rself; let rs; 
+        OrderedSet { ascending:true, v:intersect(
+            if self.ascending {&self.v} else {rself = revs(&self.v); &rself},
+            if s.ascending {&s.v} else {rs = revs(&s.v); &rs}) } 
     }
 
     /// Complement of s in self (i.e. self-s)
     fn difference(&self, s: &Self) -> OrderedSet<T> {
-        if self.ascending {
-            if s.ascending {  OrderedSet { ascending:true, v:diff(&self.v,&s.v) } }
-            else { OrderedSet { ascending:true, v:diff(&self.v, &revs(&s.v)) } }
-        }
-        else {
-            if s.ascending {  OrderedSet { ascending:true, v:diff(&revs(&self.v),&s.v) } }
-            else { OrderedSet { ascending:true, v:diff(&revs(&self.v), &revs(&s.v)) } } 
-        }
+        let rself; let rs; 
+        OrderedSet { ascending:true, v:diff(
+            if self.ascending {&self.v} else {rself = revs(&self.v); &rself},
+            if s.ascending {&s.v} else {rs = revs(&s.v); &rs}) } 
     }
 }
 
@@ -132,7 +120,7 @@ impl<T> SetOps<T> for IndexedSet<T> where T: Copy+PartialOrd {
     /// Deletes repetitions.
     fn nonrepeat(&self) -> Self { 
         let clean = &sansrepeat(&self.v);
-        Self { ascending: self.ascending, v: clean.to_vec(), i:sortidx(&clean)  }      
+        Self { ascending: self.ascending, v: clean.to_vec(), i:sortidx(clean)  }      
     }
  
     /// Finds minimum, minimum's first index, maximum, maximum's first index
@@ -163,25 +151,23 @@ impl<T> SetOps<T> for IndexedSet<T> where T: Copy+PartialOrd {
             if s.ascending { OrderedSet{ ascending:self.ascending, v: unite_indexed(&self.v,&self.i,&s.v, &s.i)} }
             else { OrderedSet { ascending:true, v: unite_indexed(&self.v,  &self.i,&s.v, &s.i.revindex() ) }     }
         }
-        else {
-            if s.ascending { OrderedSet { ascending:true, v:unite_indexed(&self.v, &self.i.revindex(),&s.v,&s.i) } }
+        else if s.ascending { OrderedSet { ascending:true, v:unite_indexed(&self.v, &self.i.revindex(),&s.v,&s.i) } }
             else { OrderedSet { ascending:true, v:unite_indexed(&self.v, &self.i.revindex(), &s.v, &s.i.revindex()) } } 
-        }
     }      
     
     /// Intersection of two sets of the same type. 
     /// Via OrderedSet for convenience, for now.
     /// Probably should use intersect_indexed as in `union` above.
     fn intersection(&self, s: &Self) -> OrderedSet<T>  {
-        let s1 = OrderedSet::from_indexed(&self,true);
-        let s2 = OrderedSet::from_indexed(&s,true);
+        let s1 = OrderedSet::from_indexed(self,true);
+        let s2 = OrderedSet::from_indexed(s,true);
         s1.intersection(&s2)
     }
     
     /// Complement of s in self (i.e. self-s)
     fn difference(&self, s: &Self) -> OrderedSet<T> {
-        let s1 = OrderedSet::from_indexed(&self,true);
-        let s2 = OrderedSet::from_indexed(&s,true); 
+        let s1 = OrderedSet::from_indexed(self,true);
+        let s2 = OrderedSet::from_indexed(s,true); 
         s1.difference(&s2) 
     }
 }
@@ -200,7 +186,7 @@ impl<T> SetOps<T> for RankedSet<T> where T: Copy+PartialOrd {
     /// Deletes repetitions.
     fn nonrepeat(&self) -> Self { 
         let clean = &sansrepeat(&self.v);
-        Self { ascending: self.ascending, v: clean.to_vec(), i:rank(&clean, self.ascending )  }      
+        Self { ascending: self.ascending, v: clean.to_vec(), i:rank(clean, self.ascending )  }      
     }
      
     /// Finds minimum, minimum's first index, maximum, maximum's first index
@@ -232,25 +218,23 @@ impl<T> SetOps<T> for RankedSet<T> where T: Copy+PartialOrd {
             if s.ascending { OrderedSet{ ascending:self.ascending, v: unite_indexed(&self.v,&self.i.invindex(),&s.v, &s.i.invindex())} }
             else { OrderedSet { ascending:true, v: unite_indexed(&self.v,  &self.i.invindex(),&s.v, &s.i.invindex().revindex() ) }     }
         }
-        else {
-            if s.ascending { OrderedSet { ascending:true, v:unite_indexed(&self.v, &self.i.invindex().revindex(),&s.v,&s.i.invindex()) } }
+        else if s.ascending { OrderedSet { ascending:true, v:unite_indexed(&self.v, &self.i.invindex().revindex(),&s.v,&s.i.invindex()) } }
             else { OrderedSet { ascending:true, v:unite_indexed(&self.v, &self.i.invindex().revindex(), &s.v, &s.i.invindex().revindex()) } } 
-        }
     }      
         
     /// Intersection of two RankedSets. 
     /// Via OrderedSet for convenience, for now.
     /// Todo: Probably should use intersect_indexed as in `union` above.
     fn intersection(&self, s: &Self) -> OrderedSet<T> {
-        let s1 = OrderedSet::from_ranked(&self,true);
-        let s2 = OrderedSet::from_ranked(&s,true);
+        let s1 = OrderedSet::from_ranked(self,true);
+        let s2 = OrderedSet::from_ranked(s,true);
         s1.intersection(&s2)
     }
         
     /// Complement of s in self (i.e. self-s)
     fn difference(&self, s: &Self) -> OrderedSet<T> {
-        let s1 = OrderedSet::from_ranked(&self,true);
-        let s2 = OrderedSet::from_ranked(&s,true); 
+        let s1 = OrderedSet::from_ranked(self,true);
+        let s2 = OrderedSet::from_ranked(s,true); 
         s1.difference(&s2) 
     }  
 

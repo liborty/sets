@@ -7,7 +7,7 @@ use sets::{Set,OrderedSet,IndexedSet,RankedSet,SetOps,MutSetOps};
 use indxvec::{wi,wv,Indices,merge::*};
 
 #[test]
-fn conversions() -> () { 
+fn conversions() { 
    let v = vec![1.,14.,2.,13.,3.,12.,4.,11.,5.,10.,10.,6.,9.,7.,8.,16.];
    let setv = Set::from_slice(&v);  
    println!("{}",setv); // Display of Set  
@@ -24,11 +24,10 @@ fn conversions() -> () {
    println!("Ranked->{}",IndexedSet::from_ranked(&rx,true)); 
    println!("Ranked->{}",OrderedSet::from_ranked(&rx,true)); 
    println!("Indexed->{}",RankedSet::from_indexed(&ix,true));
-   ()
 }
 
 #[test]
-fn settest() -> () { 
+fn settest() { 
    let v = vec![1.,14.,2.,13.,3.,12.,4.,11.,5.,10.,10.,6.,9.,7.,8.,16.];   
    let setv = RankedSet::from_slice(&v,false);  
    println!("{}",setv); // Display of Set
@@ -42,11 +41,10 @@ fn settest() -> () {
    println!("Union-> {}",&us);
    println!("Intersection-> {}",setw.intersection(&setv));
    println!("Difference-> {}",setv.difference(&setw));
-   ()
 }
 
 #[test]
-fn mutabletest() -> () { 
+fn mutabletest() { 
     let v = vec![1.,14.,2.,13.,3.,12.,4.,11.,5.,10.,10.,6.,9.,7.,8.,16.];   
     let mut setv = RankedSet::from_slice(&v,false);  
     println!("{}",setv); // Display of Set 
@@ -58,11 +56,10 @@ fn mutabletest() -> () {
     println!("Intersection-> {}",&setv);
     setw.mdifference(&setv);
     println!("Difference-> {}",&setw);
-    ()
- }
+}
  
 #[test]
-fn nlptest() -> () { 
+fn nlptest() { 
    let sentence1 = "Alphabetic ordering puts capital Letters first.";
    let sentence2 = "It sorts by Letters, ordering by Letters"; 
    let v1 = sentence1.split(' ').collect::<Vec<_>>();
@@ -79,5 +76,4 @@ fn nlptest() -> () {
    println!("Union-> {}",&us);
    println!("Intersection-> {}",setw.intersection(&setv));
    println!("Difference-> {}",setv.difference(&setw));
-   ()
 }

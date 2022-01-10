@@ -25,15 +25,15 @@ impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd {
 
     /// Intersection of two unordered sets, assigned to self
     fn mintersection(&mut self, s: &Self) {
-        let s1 = sortm(&self,true);
-        let s2 = sortm(&s,true);
+        let s1 = sortm(self,true);
+        let s2 = sortm(s,true);
         self.v = intersect(&s1,&s2) 
     }
 
     /// Complement of s in self (i.e. self -= s)
     fn mdifference(&mut self, s: &Self) {
-        let s1 = sortm(&self,true);
-        let s2 = sortm(&s,true); 
+        let s1 = sortm(self,true);
+        let s2 = sortm(s,true); 
         self.v = diff(&s1,&s2)  
     }    
 }
@@ -108,7 +108,7 @@ impl<T> MutSetOps<T> for IndexedSet<T> where T: Copy+PartialOrd {
     fn mnonrepeat(&mut self) { 
         let clean = &sansrepeat(&self.v);
         self.v = clean.to_vec();
-        self.i = sortidx(&clean)       
+        self.i = sortidx(clean)       
     } 
 
     /// Union of two IndexedSets reassigned to self.  
@@ -174,7 +174,7 @@ impl<T> MutSetOps<T> for RankedSet<T> where T: Copy+PartialOrd {
     fn mnonrepeat(&mut self) { 
         let clean = &sansrepeat(&self.v);
         self.v = clean.to_vec();
-        self.i = rank(&clean, self.ascending )       
+        self.i = rank(clean, self.ascending )       
     } 
     
     /// Union of two IndexedSets.  

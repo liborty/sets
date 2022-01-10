@@ -112,13 +112,11 @@ impl<T> OrderedSet<T> {
     }
     /// Uses index to build explicitly ordered set
     pub fn from_indexed(s: &IndexedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
-        let order = if asc == s.ascending { true } else { false };
-        OrderedSet{ ascending:asc, v: s.i.unindex(&s.v,order) }
+        OrderedSet{ ascending:asc, v: s.i.unindex(&s.v,asc == s.ascending) }
     }
     /// Uses ranks to build explicitly ordered set
     pub fn from_ranked(s: &RankedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
-        let order = if asc == s.ascending { true } else { false };
-        OrderedSet{ ascending:asc, v: s.i.invindex().unindex(&s.v,order) }
+        OrderedSet{ ascending:asc, v: s.i.invindex().unindex(&s.v,asc == s.ascending) }
     }
 }
 
