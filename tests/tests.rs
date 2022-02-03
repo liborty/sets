@@ -4,7 +4,7 @@
 
 // use anyhow::{Result};
 use sets::{Set,OrderedSet,IndexedSet,RankedSet,SetOps,MutSetOps};
-use indxvec::{wi,wv,Indices,merge::*};
+use indxvec::{Printing,Indices,merge::*};
 
 #[test]
 fn conversions() { 
@@ -33,7 +33,7 @@ fn settest() {
    println!("{}",setv); // Display of Set
    println!("Reverse-> {}",setv.reverse()); 
    println!("Nonrepeat-> {}",setv.nonrepeat()); // Display of Set    
-   println!("Is {} a member? {}\n",wi(&0.0),wi(&setv.member(0.0))); 
+   println!("Is {} a member? {}\n",0.0,setv.member(0.0)); 
    println!("Infsup: {}",setv.infsup());
    let setw = RankedSet::from_slice(&[20.,19.,18.,17.,16.,15.],true);
    println!("{}",setw);
@@ -68,12 +68,12 @@ fn nlptest() {
    println!("{}",setv); // Display of Set
    println!("Reverse-> {}",setv.reverse()); 
    println!("Nonrepeat-> {}",setv.nonrepeat()); // Display of Set    
-   println!("Is {} a member? {}\n",wi(&"Spain"),wi(&setv.member("Spain"))); 
+   println!("Is {} a member? {}\n",&"Spain",setv.member("Spain")); 
    println!("Infsup: {}",setv.infsup());
    let setw = RankedSet::from_slice(&v2,true);
    println!("{}",setw);
    let us = setw.union(&setv);
-   println!("Union-> {}",&us);
+   println!("Union-> {}",us);
    println!("Intersection-> {}",setw.intersection(&setv));
    println!("Difference-> {}",setv.difference(&setw));
 }

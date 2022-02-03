@@ -2,7 +2,7 @@ pub mod traitimpls;
 pub mod mutimpls;
 
 use std::ops::{Deref,DerefMut};
-use indxvec::{MinMax,wv,Indices,merge::*};
+use indxvec::{MinMax,Printing,Indices,merge::*};
 
 // const EMPTYIDX:Vec<usize> = vec![];
 
@@ -21,7 +21,7 @@ pub struct Set<T> {
 /// Implementation of Display trait for struct Set.
 impl<T: std::fmt::Display> std::fmt::Display for Set<T> where T:Copy {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        writeln!(f, "Unordered Set:\n{}",wv(&self.v))
+        writeln!(f, "Unordered Set:\n{}",self.v.gr())
     }
 }
 
@@ -72,9 +72,9 @@ impl<T: std::fmt::Display> std::fmt::Display for OrderedSet<T> where T:Copy {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let n = self.v.len();
         if n == 0 { return writeln!(f,"[]") }
-        let s = if self.ascending { String::from("Ascending") }
+        let ascdesc = if self.ascending { String::from("Ascending") }
             else { String::from("Descending") };  
-        writeln!(f, "{} Ordered Set:\n{}", s, wv(&self.v) )
+        writeln!(f, "{} Ordered Set:\n{}", ascdesc, self.v.gr())
     }
 }
 
@@ -135,7 +135,7 @@ impl<'a,T: std::fmt::Display> std::fmt::Display for IndexedSet<T> where T:Copy {
         let s = if self.ascending { String::from("Ascending") }
             else { String::from("Descending") };  
         writeln!(f, "{} Indexed Set\nSet:   {}\nIndex: {}",
-            s, wv(&self.v), wv(&self.i) )
+            s, self.v.gr(), self.i.gr())
     }
 }
 
@@ -175,7 +175,7 @@ impl<'a,T: std::fmt::Display> std::fmt::Display for RankedSet<T> where T:Copy {
         if n == 0 { return writeln!(f,"[]") }
         let s = if self.ascending { String::from("Ascending") }
             else { String::from("Descending") };  
-        writeln!(f, "{} Ranked Set\nSet:   {}\nRanks: {}", s, wv(&self.v), wv(&self.i) )
+        writeln!(f, "{} Ranked Set\nSet:   {}\nRanks: {}", s, self.v.gr(),self.i.gr())
     }
 }
 impl<T> RankedSet<T> {

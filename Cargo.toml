@@ -1,6 +1,6 @@
 [package]
 name = "sets"
-version = "1.0.1"
+version = "1.0.2"
 authors = ["Libor Spacek"]
 edition = "2021"
 description = "Sets implemented as generic vectors. Efficiently sorting, merging, ranking, searching, reversing, intersecting, etc."
@@ -21,4 +21,4 @@ include = [
 maintenance = { status = "actively-developed" }
 [lib]
 [dependencies]
-indxvec = "^1"
+indxvec =  { path = "../indxvec" }
