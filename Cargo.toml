@@ -21,4 +21,4 @@ include = [
 maintenance = { status = "actively-developed" }
 [lib]
 [dependencies]
-indxvec =  { path = "../indxvec" }
+indxvec = "^1"
