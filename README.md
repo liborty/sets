@@ -56,7 +56,7 @@ They overwrite the mutable set to which they are applied with the result. Thus t
 
 ## Release Notes (Latest First)
 
-**Version 1.0.2** - some changes to Display to reflect changes to `indxvec`.
+**Version 1.0.2** - some changes to printing to reflect changes to `indxvec`.
 
 **Version 1.0.1** - some tidying up of code, no changes of functionality.
 
