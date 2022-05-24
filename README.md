@@ -7,7 +7,7 @@
 
 ## Description
 
-Crate `sets` consists mostly of structs `Set, OrderedSet, IndexedSet, RankedSet`, which are type-safe wrappers for the more primitive imported functions and methods from crate `indxvec`.
+This crate defines structs `Set, OrderedSet, IndexedSet, RankedSet` and methods acting on them. These structs are type-safe wrappers for the more primitive imported functions and methods from crate `indxvec`.
 
 The main capabilities of `sets` include: efficient sorting, ranking, merging, searching and indices manipulations. The structs contain generic vectors `Vec<T>`. Thus they will work with vectors or slices of primitive end types but also with any arbitrarily complex end type `T`, as long as the required traits `PartialOrd` and `Copy`, are implemented for `T`.
 
@@ -16,17 +16,22 @@ The main capabilities of `sets` include: efficient sorting, ranking, merging, se
 Insert into your Cargo.toml file [dependencies] section: `sets = "^1"`  
 Import into your source file(s) the four structs for the four different types of sets and the two traits `SetOps` and `MutSetOps`. The following 'use' declaration imports everything:
 
-```use sets::{Set,OrderedSet,IndexedSet,RankedSet,SetOps,MutSetOps};```
+```rust
+use sets::{Set,OrderedSet,IndexedSet,RankedSet,SetOps,MutSetOps};
+```
 
-The initialisers and convertors are associated with their structs, hence the `::` syntax, e.g.:  
-```let s = Set::from_slice(&v);```
+The initialisers and convertors are associated with their structs, hence the `::` syntax, e.g.:
 
-The rest are methods of the traits `SetOps`, and `MutSetOps` e.g.:
+```rust
+let s = Set::from_slice(&v);
+```
+
+Example use of methods from the traits `SetOps`, and `MutSetOps`:
 
 ```rust
 // new mutable set with unique elements  
 let mut su = s.nonrepeat();
-// transformed into the opposite order  
+// transformed in place into the opposite order  
 su.mreverse; 
 ```
 
@@ -40,7 +45,7 @@ Implements the following methods for all four types of sets (structs):
 
 `reverse, nonrepeat, infsup, member, search, union, intersection, difference`.
 
- Some of these methods are more efficient for the ordered and indexed sets, rather than for the unordered sets. For example, `member` and `search` are then able to use binary search. Union is like the classical merge but only one copy of items that were present in both input sets is kept. To remove repetitions from a set at any other time, use `nonrepeat`.
+ Some of these methods are more efficient for the ordered and indexed sets, rather than for the unordered sets. For example, `member` and `search` are then able to use binary search. Union is like the classical merge but only one copy of items that were present in both input sets is kept. To remove repetitions from a single set at any other time, use `nonrepeat`.
 
 `Union`, `intersection` and `difference` when applied to IndexedSet(s) and RankedSet(s) return an OrderedSet as a result. When necessary, this result can be explicitly converted to other types of sets.
 
@@ -52,7 +57,7 @@ Implements the following methods for all four types of sets:
 
 `mreverse, mnonrepeat, munion, mintersection, mdifference`.
 
-They overwrite the mutable set to which they are applied with the result. Thus they are not *functional* but in this context of handling potentially large vectors, they are in some cases simpler and more efficient.
+They overwrite the mutable set to which they are applied with the result. Thus they are not *functional* but in the context of handling large vectors, they are often simpler and more efficient.
 
 ## Release Notes (Latest First)
 

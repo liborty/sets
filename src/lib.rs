@@ -51,11 +51,11 @@ impl<T> Set<T> where T: Copy {
         Set { v: s.to_vec() }
     }
  
-    /// Simply clones the slice and throws away its index
+    /// Simply copies the slice and throws away its index
     pub fn from_indexed(s: &IndexedSet<T>) -> Self {
         Set{ v: s.v.to_vec() }
     }
-    /// Simply clones the slice and throws away the ranks
+    /// Simply copies the slice and throws away the ranks
     pub fn from_ranked(s: &RankedSet<T>) -> Self {
         Set{ v: s.v.to_vec() }
     }  
@@ -120,7 +120,7 @@ impl<T> OrderedSet<T> {
     }
 }
 
-/// Struct holding an unordered set and its sort index. 
+/// Struct holding an (unordered)git set and its sort index. 
 /// Thus it is an index ordered set (ascending or descending).
 pub struct IndexedSet<T> {
     pub ascending: bool,
