@@ -2,14 +2,15 @@ pub mod traitimpls;
 pub mod mutimpls;
 
 use std::ops::{Deref,DerefMut};
-use indxvec::{MinMax,Printing,Indices,merge::*};
+use indxvec::{MinMax,Printing,Indices,Vecops};
 
 // const EMPTYIDX:Vec<usize> = vec![];
 
 /// Constructs a trivial index (for already sorted sets), 
 /// of required ascending or descending order and size
 pub fn trivindex(asc:bool,n:usize) -> Vec<usize> { 
-    if asc { (0..n).collect() } else { (0..n).rev().collect() }
+    if asc { Vec::from_iter(0..n) } 
+    else { Vec::from_iter((0..n).rev()) }
 }
 
 /// Unordered set holding a generic Vec<T>. 
@@ -104,11 +105,11 @@ impl<T> OrderedSet<T> {
 
     /// Initialiser, explicitly sorts an unordered slice
     pub fn from_slice(s: &[T], asc: bool) -> Self where T:PartialOrd+Copy {
-        OrderedSet{ ascending:asc, v: sortm(s,asc) }
+        OrderedSet{ ascending:asc, v: s.sortm(asc) }
     }
     /// Initialiser, explicitly sorts an unordered Set
     pub fn from_set(s: &Set<T>, asc: bool) -> Self where T:PartialOrd+Copy {
-        OrderedSet{ ascending:asc, v: sortm(&s.v,asc) }
+        OrderedSet{ ascending:asc, v: s.v.sortm(asc) }
     }
     /// Uses index to build explicitly ordered set
     pub fn from_indexed(s: &IndexedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
@@ -142,13 +143,13 @@ impl<'a,T: std::fmt::Display> std::fmt::Display for IndexedSet<T> where T:Copy {
 impl<'a,T> IndexedSet<T> {
     /// Initialiser, indexsorts an unordered slice
     pub fn from_slice(s: &'a[T], asc:bool) -> Self where T:PartialOrd+Copy {
-        if asc { IndexedSet{ ascending:true, v:s.to_vec(), i:sortidx(s) } }
-        else { IndexedSet{ ascending:false, v:s.to_vec(), i:sortidx(s).revindex() } }
+        if asc { IndexedSet{ ascending:true, v:s.to_vec(), i:s.sortidx() } }
+        else { IndexedSet{ ascending:false, v:s.to_vec(), i:s.sortidx().revindex() } }
     }
     /// Initialiser, indexsorts an unordered Set
     pub fn from_set(s: &'a Set<T>, asc: bool) -> Self where T:PartialOrd+Copy {
-        if asc { IndexedSet{ ascending:true, v:s.v.to_vec(), i:sortidx(&s.v) } }
-        else { IndexedSet{ ascending:false, v:s.v.to_vec(), i:sortidx(&s.v).revindex() } }     
+        if asc { IndexedSet{ ascending:true, v:s.v.to_vec(), i:s.sortidx() } }
+        else { IndexedSet{ ascending:false, v:s.v.to_vec(), i:s.v.sortidx().revindex() } }     
     }
     /// From Oredered, the sort index will be trivial 
     pub fn from_ordered(s: &'a OrderedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {        
@@ -181,11 +182,11 @@ impl<'a,T: std::fmt::Display> std::fmt::Display for RankedSet<T> where T:Copy {
 impl<T> RankedSet<T> {
     /// Initialiser, ranks an unordered slice
     pub fn from_slice(s: &[T], asc:bool) -> Self where T:PartialOrd+Copy {
-        RankedSet{ ascending:asc, v:s.to_vec(), i:rank(s,asc) }
+        RankedSet{ ascending:asc, v:s.to_vec(), i:s.rank(asc) }
     }
     /// Initialiser, ranks an unordered Set
     pub fn from_set(s: &Set<T>, asc: bool) -> Self where T:PartialOrd+Copy {
-        RankedSet{ ascending:asc, v:s.v.to_vec(), i:rank(s,asc) } 
+        RankedSet{ ascending:asc, v:s.v.to_vec(), i:s.rank(asc) } 
     }        
     /// From Ordered - the index will be trivial 
     pub fn from_ordered(s: &OrderedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {       
@@ -211,7 +212,7 @@ pub trait SetOps<T> {
     /// Search of a set, returns Some(index) of the last item found, or None.
     fn search(&self, m: T)  -> Option<usize>;    
     /// Union of two sets of the same type
-    fn union(&self, s: &Self) -> OrderedSet<T>;
+    fn union(&self, s: &Self) -> Self;
     /// Intersection of two sets of the same type
     fn intersection(&self, s: &Self) -> OrderedSet<T>;
     /// Removing s from self (i.e. self-s)

@@ -1,5 +1,5 @@
 use crate::{trivindex,Set,OrderedSet,IndexedSet,RankedSet,MutSetOps};
-use indxvec::{Indices,merge::*};
+use indxvec::{Indices,Vecops};
 
 impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd {
 
@@ -14,27 +14,25 @@ impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd {
     }
 
     /// Deletes any repetitions
-    fn mnonrepeat(&mut self) { self.v = sansrepeat(&self.v) }
+    fn mnonrepeat(&mut self) { self.v = self.v.sansrepeat() }
 
-    /// Union of two unordered sets, assigned to self  
+    /// Union of two unordered sets, concat assigned to self  
     fn munion(&mut self, s: &Self) {
-        let s1 = sortm(&self.v,true);
-        let s2 = sortm(&s.v,true);
-        self.v = unite(&s1,&s2) 
+        self.v = self.unite_unsorted(s); 
     }
 
     /// Intersection of two unordered sets, assigned to self
     fn mintersection(&mut self, s: &Self) {
-        let s1 = sortm(self,true);
-        let s2 = sortm(s,true);
-        self.v = intersect(&s1,&s2) 
+        let s1 = self.sortm(true);
+        let s2 = s.sortm(true);
+        self.v = s1.intersect(&s2); 
     }
 
     /// Complement of s in self (i.e. self -= s)
     fn mdifference(&mut self, s: &Self) {
-        let s1 = sortm(self,true);
-        let s2 = sortm(s,true); 
-        self.v = diff(&s1,&s2)  
+        let s1 = self.sortm(true);
+        let s2 = s.sortm(true); 
+        self.v = s1.diff(&s2);  
     }    
 }
 
@@ -52,45 +50,31 @@ impl<T> MutSetOps<T> for OrderedSet<T> where T:Copy+PartialOrd {
     }
 
     /// Deletes any repetitions
-    fn mnonrepeat(&mut self) { self.v = sansrepeat(&self.v) }  
+    fn mnonrepeat(&mut self) { self.v = self.v.sansrepeat() }  
 
     /// Ascending union of two ordered sets, reassigned to self 
     fn munion(&mut self, s: &Self) { 
-        if self.ascending {
-            if s.ascending {  self.v = unite(&self.v,&s.v) }
-            else { self.v = unite(&self.v, &revs(&s.v)) }
-        }
-        else {
-            self.ascending = true; // the result is always ascending
-            if s.ascending {  self.v = unite(&revs(&self.v),&s.v) }
-            else { self.v = unite(&revs(&self.v), &revs(&s.v)) } 
-        }
-    }     
+        // the result will be always ascending
+        if !self.ascending { self.ascending = true; self.v = self.v.revs() };
+        if s.ascending { self.v = self.v.merge(&s.v) } 
+
+        else { self.v = self.v.merge(&s.v.revs()); }; 
+    } 
 
     /// Ascending intersection of two sets, assigned to the self 
     fn mintersection(&mut self, s: &Self) {
-        if self.ascending {
-            if s.ascending {  self.v = intersect(&self.v,&s.v) }
-            else { self.v = intersect(&self.v, &revs(&s.v)) }
-        }
-        else {
-            self.ascending = true; // the result is always ascending
-            if s.ascending {  self.v = intersect(&revs(&self.v),&s.v) } 
-            else { self.v = intersect(&revs(&self.v), &revs(&s.v)) }  
-        }
+        // the result will be always ascending
+        if !self.ascending { self.ascending = true; self.v = self.v.revs() }; 
+        if s.ascending { self.v = self.v.intersect(&s.v )}
+        else { self.v = self.v.intersect(&s.v.revs()) };  
     }
 
     /// Ascending complement of s in self (i.e. self-s)
     fn mdifference(&mut self, s: &Self) {
-        if self.ascending {
-            if s.ascending {  self.v = diff(&self.v,&s.v) } 
-            else { self.v = diff(&self.v, &revs(&s.v)) } 
-        }
-        else {
-            self.ascending = true; 
-            if s.ascending {  self.v = diff(&revs(&self.v),&s.v) } 
-            else { self.v = diff(&revs(&self.v), &revs(&s.v)) }  
-        }
+        // the result will be always ascending
+        if !self.ascending { self.ascending = true;  self.v = self.v.revs() };
+        if s.ascending { self.v  = self.v.diff(&s.v) }
+        else { self.v  = self.v.diff(&s.v.revs()) };
     }
 }
 
@@ -101,42 +85,39 @@ impl<T> MutSetOps<T> for IndexedSet<T> where T: Copy+PartialOrd {
     /// just reverse the index
     fn mreverse(&mut self) {
         self.ascending = !self.ascending;
-        self.i = self.i.revindex() 
+        self.i = self.i.revindex(); 
         }
     
     /// deletes repetitions.
     fn mnonrepeat(&mut self) { 
-        let clean = &sansrepeat(&self.v);
-        self.v = clean.to_vec();
-        self.i = sortidx(clean)       
+        self.v = self.v.sansrepeat();
+        self.i = self.v.sortidx();       
     } 
 
     /// Union of two IndexedSets reassigned to self.  
-    /// self will be ascending ordered  
+    /// Will be always ascending ordered.  
     fn munion(&mut self, s: &Self) {         
         if self.ascending {         
-            if s.ascending { self.v = unite_indexed(&self.v,&self.i,&s.v, &s.i) }
-            else { self.v = unite_indexed(&self.v,  &self.i,&s.v, &s.i.revindex() ) }     
+            if s.ascending { (self.v,self.i) = self.v.merge_indexed(&self.i,&s.v, &s.i) }
+            else { (self.v,self.i) = self.v.merge_indexed(&self.i, &s.v, &s.i.revindex() ) }     
         }
         else {
             self.ascending = true; 
-            if s.ascending { self.v = unite_indexed(&self.v, &self.i.revindex(),&s.v,&s.i) } 
-            else { self.v = unite_indexed(&self.v, &self.i.revindex(), &s.v, &s.i.revindex()) }  
+            if s.ascending { (self.v,self.i) = self.v.merge_indexed( &self.i.revindex(),&s.v,&s.i) } 
+            else { (self.v,self.i) = self.v.merge_indexed(&self.i.revindex(), &s.v, &s.i.revindex()) }  
         }
-        // result index will be of the new size but in all cases trivial and ascending
-        self.i = trivindex(true,self.v.len()); 
     }      
     
     /// Intersection of two IndexedSets
     fn mintersection(&mut self, s: &Self) {
         if self.ascending {
-            if s.ascending { self.v = intersect_indexed(&self.v,&self.i,&s.v, &s.i) }
-            else { self.v = intersect_indexed(&self.v,  &self.i,&s.v, &s.i.revindex() ) }     
+            if s.ascending { self.v = self.v.intersect_indexed(&self.i,&s.v, &s.i) }
+            else { self.v = self.v.intersect_indexed(&self.i,&s.v, &s.i.revindex() ) }     
         }
         else {
             self.ascending = true; 
-            if s.ascending { self.v = intersect_indexed(&self.v, &self.i.revindex(),&s.v,&s.i) } 
-            else { self.v = intersect_indexed(&self.v, &self.i.revindex(), &s.v, &s.i.revindex()) }  
+            if s.ascending { self.v = self.v.intersect_indexed(&self.i.revindex(),&s.v,&s.i) } 
+            else { self.v = self.v.intersect_indexed(&self.i.revindex(), &s.v, &s.i.revindex()) }  
         }
         // result index will be of the new size but in all cases trivial and ascending
         self.i = trivindex(true,self.v.len()); 
@@ -145,13 +126,13 @@ impl<T> MutSetOps<T> for IndexedSet<T> where T: Copy+PartialOrd {
     /// Complement of s in self (i.e. self-s)
     fn mdifference(&mut self, s: &Self) {
         if self.ascending {
-            if s.ascending { self.v = diff_indexed(&self.v,&self.i,&s.v, &s.i) }
-            else { self.v = diff_indexed(&self.v,  &self.i,&s.v, &s.i.revindex() ) }     
+            if s.ascending { self.v = self.v.diff_indexed(&self.i,&s.v, &s.i) }
+            else { self.v = self.v.diff_indexed(&self.i,&s.v, &s.i.revindex() ) }     
         }
         else {
             self.ascending = true; 
-            if s.ascending { self.v = intersect_indexed(&self.v, &self.i.revindex(),&s.v,&s.i) } 
-            else { self.v = intersect_indexed(&self.v, &self.i.revindex(), &s.v, &s.i.revindex()) }  
+            if s.ascending { self.v = self.v.intersect_indexed(&self.i.revindex(),&s.v,&s.i) } 
+            else { self.v = self.v.intersect_indexed(&self.i.revindex(), &s.v, &s.i.revindex()) }  
         }
         // result index will be of the new size but in all cases trivial and ascending
         self.i = trivindex(true,self.v.len()); 
@@ -167,41 +148,40 @@ impl<T> MutSetOps<T> for RankedSet<T> where T: Copy+PartialOrd {
     /// just make the ranks descending
     fn mreverse(&mut self) {
         self.ascending = !self.ascending;
-        self.i = self.i.complindex() 
+        self.i = self.i.complindex() // `complindex` reverses the ranks
     }
         
     /// deletes repetitions.
     fn mnonrepeat(&mut self) { 
-        let clean = &sansrepeat(&self.v);
+        let clean = self.v.sansrepeat();
         self.v = clean.to_vec();
-        self.i = rank(clean, self.ascending )       
+        // rebuild the ranks (can do better)
+        self.i = clean.rank(self.ascending)      
     } 
     
-    /// Union of two IndexedSets.  
-    fn munion(&mut self, s: &Self) {         
-        if self.ascending {
-            if s.ascending { self.v = unite_indexed(&self.v,&self.i.invindex(),&s.v, &s.i.invindex()) }
-            else { self.v = unite_indexed(&self.v,  &self.i.invindex(),&s.v, &s.i.invindex().revindex() ) }     
-        }
-        else {
-            self.ascending = true; 
-            if s.ascending { self.v = unite_indexed(&self.v, &self.i.invindex().revindex(),&s.v,&s.i.invindex()) } 
-            else { self.v = unite_indexed(&self.v, &self.i.invindex().revindex(), &s.v, &s.i.invindex().revindex()) }  
-        }
-        // result ranks will be of the new size but in all cases trivial and ascending
-        self.i = trivindex(true,self.v.len()); 
+    /// Union of two RankedSets. 
+    /// Converts ranks to sort indices with `invindex`, merges, then converts back to ranks
+    /// Data `self.v` is simply concatenated
+    fn munion(&mut self, s: &Self) {
+        if !self.ascending { self.ascending = true; self.i = self.i.complindex() }
+        if s.ascending { (self.v,self.i) = 
+            self.v.merge_indexed( &self.i.invindex(), &s.v, &s.i.invindex() ); }
+        else { (self.v,self.i) = 
+            self.v.merge_indexed( &self.i.invindex(), &s.v, &s.i.invindex().revindex() ); };        
+        self.i = self.i.invindex(); // invert back to ranks index
     }      
         
-    /// Intersection of two IndexedSets
+    /// Intersection of two RankedSets
     fn mintersection(&mut self, s: &Self) {
         if self.ascending {
-            if s.ascending { self.v = intersect_indexed(&self.v,&self.i.invindex(),&s.v, &s.i.invindex()) }
-            else { self.v = intersect_indexed(&self.v,  &self.i.invindex(),&s.v, &s.i.invindex().revindex() ) }     
+            if s.ascending { self.v = self.v.intersect_indexed(&self.i.invindex(),&s.v, &s.i.invindex()) }
+            else { self.v = self.v.intersect_indexed(  &self.i.invindex(),&s.v, &s.i.invindex().revindex() ) }     
         }
         else {
             self.ascending = true; 
-            if s.ascending { self.v = intersect_indexed(&self.v, &self.i.invindex().revindex(),&s.v,&s.i.invindex()) } 
-            else { self.v = intersect_indexed(&self.v, &self.i.invindex().revindex(), &s.v, &s.i.invindex().revindex()) }  
+            if s.ascending { self.v = 
+                self.v.intersect_indexed( &self.i.invindex().revindex(),&s.v,&s.i.invindex()) } 
+            else { self.v = self.v.intersect_indexed( &self.i.invindex().revindex(), &s.v, &s.i.invindex().revindex()) }  
         }
         // result ranks will be of the new size but in all cases trivial and ascending
         self.i = trivindex(true,self.v.len()); 
@@ -210,15 +190,15 @@ impl<T> MutSetOps<T> for RankedSet<T> where T: Copy+PartialOrd {
     /// Complement of s in self (i.e. self-s)
     fn mdifference(&mut self, s: &Self) {
         if self.ascending {
-            if s.ascending { self.v = diff_indexed(&self.v,&self.i.invindex(),&s.v, &s.i.invindex()) }
-            else { self.v = diff_indexed(&self.v,  &self.i.invindex(),&s.v, &s.i.invindex().revindex() ) }     
+            if s.ascending { self.v = self.v.diff_indexed(&self.i.invindex(),&s.v, &s.i.invindex()) }
+            else { self.v = self.v.diff_indexed( &self.i.invindex(),&s.v, &s.i.invindex().revindex() ) }     
         }
         else {
             self.ascending = true; 
-            if s.ascending { self.v = intersect_indexed(&self.v, &self.i.invindex().revindex(),&s.v,&s.i.invindex()) } 
-            else { self.v = intersect_indexed(&self.v, &self.i.invindex().revindex(), &s.v, &s.i.invindex().revindex()) }  
+            if s.ascending { self.v = self.v.diff_indexed( &self.i.invindex().revindex(),&s.v,&s.i.invindex()) } 
+            else { self.v = self.v.diff_indexed( &self.i.invindex().revindex(), &s.v, &s.i.invindex().revindex()) }  
         }
-        // result ranks will be of the new size but in all cases trivial and ascending
+        // result ranks will be of the new size, trivial and ascending
         self.i = trivindex(true,self.v.len()); 
     }
 }

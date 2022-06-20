@@ -4,7 +4,7 @@
 
 // use anyhow::{Result};
 use sets::{Set,OrderedSet,IndexedSet,RankedSet,SetOps,MutSetOps};
-use indxvec::{Printing,Indices,merge::*};
+use indxvec::{Printing,Indices,Vecops};
 
 #[test]
 fn conversions() { 

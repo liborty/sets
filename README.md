@@ -7,7 +7,7 @@
 
 ## Description
 
-This crate defines structs `Set, OrderedSet, IndexedSet, RankedSet` and methods acting on them. These structs are type-safe wrappers for the more primitive imported functions and methods from crate `indxvec`.
+This crate defines `Structs: Set, OrderedSet, IndexedSet, RankedSet` and methods acting on them. These structs are type-safe wrappers for the more primitive imported functions and methods from crate `indxvec`.
 
 The main capabilities of `sets` include: efficient sorting, ranking, merging, searching and indices manipulations. The structs contain generic vectors `Vec<T>`. Thus they will work with vectors or slices of primitive end types but also with any arbitrarily complex end type `T`, as long as the required traits `PartialOrd` and `Copy`, are implemented for `T`.
 
@@ -41,15 +41,17 @@ It is highly recommended to read and run `tests/tests.rs` for many more examples
 
 ## Trait SetOps
 
-Implements the following methods for all four types of sets (structs):
+Implements the following methods for all four types of sets (`Struct`s):
 
 `reverse, nonrepeat, infsup, member, search, union, intersection, difference`.
 
  Some of these methods are more efficient for the ordered and indexed sets, rather than for the unordered sets. For example, `member` and `search` are then able to use binary search. Union is like the classical merge but only one copy of items that were present in both input sets is kept. To remove repetitions from a single set at any other time, use `nonrepeat`.
 
-`Union`, `intersection` and `difference` when applied to IndexedSet(s) and RankedSet(s) return an OrderedSet as a result. When necessary, this result can be explicitly converted to other types of sets.
+`intersection` and `difference`, when applied to IndexedSet(s) and RankedSet(s) return an OrderedSet as a result. This result can be explicitly converted to other types of sets when needed. 
 
-Alternatively, `munion, minteresection and mdifference`, (where 'm' stands for 'mutable', see below), will overwrite `self` with the resulting set of the same type.
+`Union` returns the same type as the one to which it is applied. Thus, for example, union of two (unordered) `Set`s will produce another unordered `Set` (just their concatenation).
+
+`munion, minteresection and mdifference`, (where 'm' stands for 'mutable', see below), will overwrite `self` with the resulting set of the same type.
 
 ## Trait MutSetOps
 
@@ -61,13 +63,15 @@ They overwrite the mutable set to which they are applied with the result. Thus t
 
 ## Release Notes (Latest First)
 
+**Version 1.0.3** - updated to be compatible with `indxvec` version 1.2.1. Improved `munion`.
+
 **Version 1.0.2** - some changes to printing to reflect changes to `indxvec`.
 
 **Version 1.0.1** - some tidying up of code, no changes of functionality.
 
 **Version 1.0.0** - stable version with some minor improvements to README.md (this document). Updated to `indxvec = "^1"` and Rust edition 2021.
 
-**Version 0.1.8** - 'infsup' now returns struct MinMax (defined in crate 'sets').
+**Version 0.1.8** - `infsup` now returns Struct MinMax (defined in crate `sets`).
 
 **Version 0.1.7** - just some cosmetic cleaning up. No change of functionality from the previous version.
 
@@ -79,8 +83,8 @@ They overwrite the mutable set to which they are applied with the result. Thus t
 
 **Version 0.1.3** - fixed readme typos, improved tests, implemented `SetOps` for `OrderedSet`.
 
-**Version 0.1.2** - implemented `SetOps` trait for struct `Set`. The other three structs will follow in the next versions.
+**Version 0.1.2** - implemented `SetOps` trait for Struct `Set`. The other three Structs will follow in the next versions.
 
-**Version 0.1.1** - competed the associated functions for all initiations and conversions of the four set structs.
+**Version 0.1.1** - competed the associated functions for all initiations and conversions of the four set Structs.
 
-**Version 0.1.0** - first version, includes creation and conversions of the structs representing the four types of sets.
+**Version 0.1.0** - first version, includes creation and conversions of the Structs representing the four types of sets.
