@@ -92,8 +92,7 @@ pub trait MutSetOps<T> {
     /// Removing s from self (i.e. self-s)
     fn mdifference(&mut self, s: &Self);
 }
-```rust
-
+```
 
 ## Release Notes (Latest First)
 
