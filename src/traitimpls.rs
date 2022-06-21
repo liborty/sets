@@ -7,9 +7,9 @@ impl<T> SetOps<T> for Set<T> where T:Copy+PartialOrd {
         Self { v: self.v.revs() }
     }
 
-    /// Deletes any repetitions
-    fn nonrepeat(&self) -> Self { 
-        Self { v: self.v.sansrepeat() }
+    /// Sorts and deletes any repetitions
+    fn nonrepeat(&self) -> OrderedSet<T> { 
+        OrderedSet { ascending:true, v: self.v.sortm(true).sansrepeat() }
     }
 
     /// Finds minimum, minimum's first index, maximum, maximum's first index of &[T] 
@@ -19,13 +19,14 @@ impl<T> SetOps<T> for Set<T> where T:Copy+PartialOrd {
 
     /// True if m is a member of the set
     fn member(&self, m: T) -> bool  { 
-        let opt = self.v.member(m);
+        let opt = self.v.member(m); // from indxvec
         opt.is_some()     
     }
 
-    /// Search a Set for m. Returns index of the first m or `None`
-    fn search(&self, m: T)  -> Option<usize>  {
-        self.v.member(m)
+    /// Search a Set for m.
+    /// Returns the subscript of the first m or None
+    fn search(&self, m: T)  -> Option<usize> {
+        self.v.member(m) 
     }
 
     /// Union of two unordered sets of the same end type T 
@@ -116,9 +117,9 @@ impl<T> SetOps<T> for IndexedSet<T> where T: Copy+PartialOrd {
         }
     
     /// Deletes repetitions.
-    fn nonrepeat(&self) -> Self { 
-        let clean = self.v.sansrepeat();
-        Self { ascending: self.ascending, v: clean.to_vec(), i: clean.sortidx()  }      
+    fn nonrepeat(&self) -> OrderedSet<T> {
+        OrderedSet { ascending: self.ascending, 
+            v: self.i.unindex(&self.v,true).sansrepeat()  }      
     }
  
     /// Finds minimum, minimum's first index, maximum, maximum's first index
@@ -182,9 +183,9 @@ impl<T> SetOps<T> for RankedSet<T> where T: Copy+PartialOrd {
     }
         
     /// Deletes repetitions.
-    fn nonrepeat(&self) -> Self { 
-        let clean = self.v.sansrepeat();
-        Self { ascending: self.ascending, v: clean.to_vec(), i:clean.rank(self.ascending )  }      
+    fn nonrepeat(&self) -> OrderedSet<T> { 
+        OrderedSet { ascending: self.ascending, 
+        v: self.i.invindex().unindex(&self.v,true).sansrepeat()  } 
     }
      
     /// Finds minimum, minimum's first index, maximum, maximum's first index

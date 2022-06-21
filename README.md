@@ -23,27 +23,49 @@ use sets::{Set,OrderedSet,IndexedSet,RankedSet,SetOps,MutSetOps};
 The initialisers and convertors are associated with their structs, hence the `::` syntax, e.g.:
 
 ```rust
+// Unordered set from slice v
 let s = Set::from_slice(&v);
 ```
 
 Example use of methods from the traits `SetOps`, and `MutSetOps`:
 
 ```rust
-// new mutable set with unique elements  
+// Mutable set with unique elements  
 let mut su = s.nonrepeat();
-// transformed in place into the opposite order  
+// su reversed in place into the opposite order  
 su.mreverse; 
 ```
 
 It is highly recommended to read and run `tests/tests.rs` for many more examples of usage. Use a single thread to run them. It may be a bit slower but it will write the results in the right order:
 
-`cargo test --release -- --test-threads=1 --nocapture --color always`
+```bash
+cargo test --release -- --test-threads=1 --nocapture --color always
+```
 
 ## Trait SetOps
 
 Implements the following methods for all four types of sets (`Struct`s):
 
-`reverse, nonrepeat, infsup, member, search, union, intersection, difference`.
+```rust
+pub trait SetOps<T> {
+    /// reverses the vector of explicit sets and index of indexed sets
+    fn reverse(&self) -> Self;
+    /// Deletes any repetitions
+    fn nonrepeat(&self) -> Self;
+    /// Finds minimum, its first index, maximum, its first index  
+    fn infsup(&self) -> MinMax<T>; 
+    /// True if m is a member of the set
+    fn member(&self, m: T) -> bool;
+    /// Some(index) of the first item found, or None.
+    fn search(&self, m: T)  -> Option<usize>;    
+    /// Union of two sets of the same type
+    fn union(&self, s: &Self) -> Self;
+    /// Intersection of two sets of the same type
+    fn intersection(&self, s: &Self) -> OrderedSet<T>;
+    /// Removing s from self (i.e. self-s)
+    fn difference(&self, s: &Self) -> OrderedSet<T>;
+}
+```
 
  Some of these methods are more efficient for the ordered and indexed sets, rather than for the unordered sets. For example, `member` and `search` are then able to use binary search. Union is like the classical merge but only one copy of items that were present in both input sets is kept. To remove repetitions from a single set at any other time, use `nonrepeat`.
 
@@ -51,17 +73,31 @@ Implements the following methods for all four types of sets (`Struct`s):
 
 `Union` returns the same type as the one to which it is applied. Thus, for example, union of two (unordered) `Set`s will produce another unordered `Set` (just their concatenation).
 
-`munion, minteresection and mdifference`, (where 'm' stands for 'mutable', see below), will overwrite `self` with the resulting set of the same type.
-
 ## Trait MutSetOps
+
+Here 'm' in the methods' names stands for 'mutable'. They overwrite the mutable set to which they are applied with the result. Thus they are not *functional* but in the context of handling large vectors, they are often simpler and more efficient. At the price of destroying the previous contents of self, of course.
 
 Implements the following methods for all four types of sets:
 
-`mreverse, mnonrepeat, munion, mintersection, mdifference`.
+```rust
+pub trait MutSetOps<T> {
+    /// reverses the vector of explicit sets and index of indexed sets
+    fn mreverse(&mut self);
+    /// Deletes any repetitions
+    fn mnonrepeat(&mut self); 
+    /// Union of two sets of the same type
+    fn munion(&mut self, s: &Self);
+    /// Intersection of two sets of the same type
+    fn mintersection(&mut self, s: &Self);
+    /// Removing s from self (i.e. self-s)
+    fn mdifference(&mut self, s: &Self);
+}
+```rust
 
-They overwrite the mutable set to which they are applied with the result. Thus they are not *functional* but in the context of handling large vectors, they are often simpler and more efficient.
 
 ## Release Notes (Latest First)
+
+**Version 1.0.4** - `nonrepeat` now always returns an OrderedSet. Clarified `settest`.
 
 **Version 1.0.3** - updated to be compatible with `indxvec` version 1.2.1. Improved `munion`.
 

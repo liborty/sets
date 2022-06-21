@@ -169,7 +169,7 @@ pub struct RankedSet<T> {
     pub v: Vec<T>,
     pub i: Vec<usize>,
 }
-/// Display implemented for struct IndexedSet.
+/// Display implemented for struct RankedSet.
 impl<'a,T: std::fmt::Display> std::fmt::Display for RankedSet<T> where T:Copy {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let n = self.v.len();
@@ -204,12 +204,12 @@ pub trait SetOps<T> {
     /// reverses the vector of explicit sets and index of indexed sets
     fn reverse(&self) -> Self;
     /// Deletes any repetitions
-    fn nonrepeat(&self) -> Self;
+    fn nonrepeat(&self) -> OrderedSet<T>;
     /// Finds minimum, minimum's first index, maximum, maximum's first index  
     fn infsup(&self) -> MinMax<T>; 
     /// True if m is a member of the set
     fn member(&self, m: T) -> bool;
-    /// Search of a set, returns Some(index) of the last item found, or None.
+    /// Some(index) of the first item found, or None.
     fn search(&self, m: T)  -> Option<usize>;    
     /// Union of two sets of the same type
     fn union(&self, s: &Self) -> Self;

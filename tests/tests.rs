@@ -28,13 +28,17 @@ fn conversions() {
 
 #[test]
 fn settest() { 
-   let v = vec![1.,14.,2.,13.,3.,12.,4.,11.,5.,10.,10.,6.,9.,7.,8.,16.];   
+   let v = vec![1.,14.,2.,13.,3.,12.,4.,11.,5.,10.,10.,6.,9.,7.,8.,16.];
+   println!("Data: {}\n",v.bl()); // Display of Set   
+   let sv = Set::from_slice(&v); 
+   println!("Where is {}? at {}\n",12.bl(),sv.search(12.0).map_or_else(||"None".rd(),|x|x.gr()));  
    let setv = RankedSet::from_slice(&v,false);  
    println!("{}",setv); // Display of Set
    println!("Reverse-> {}",setv.reverse()); 
    println!("Nonrepeat-> {}",setv.nonrepeat()); // Display of Set    
-   println!("Is {} a member? {}\n",0.0,setv.member(0.0)); 
-   println!("Infsup: {}",setv.infsup());
+   println!("Is {} a member? {}\n",0.0.bl(),setv.member(0.0).gr());
+   println!("Where is {} (from descending ranked set)? at {}\n",12.bl(),setv.search(12.0).map_or_else(||"None".rd(),|x|x.gr())); 
+   println!("Infsup: {}\n",setv.infsup());
    let setw = RankedSet::from_slice(&[20.,19.,18.,17.,16.,15.],true);
    println!("{}",setw);
    let us = setw.union(&setv);
