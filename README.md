@@ -7,32 +7,38 @@
 
 ## Description
 
-This crate defines `Structs: Set, OrderedSet, IndexedSet, RankedSet` and methods acting on them. These structs are type-safe wrappers for the more primitive imported functions and methods from crate `indxvec`.
+This crate defines `Structs: Set, OrderedSet, IndexedSet, RankedSet` and methods acting on them. These `Struct`s are type-safe wrappers for the more primitive imported functions and methods from crate `indxvec`.
 
-The main capabilities of `sets` include: efficient sorting, ranking, merging, searching and indices manipulations. The structs contain generic vectors `Vec<T>`. Thus they will work with vectors or slices of primitive end types but also with any arbitrarily complex end type `T`, as long as the required traits `PartialOrd` and `Copy`, are implemented for `T`.
+The main capabilities of `sets` include: efficient sorting, ranking, merging, searching and indices manipulations. These methods work with generic vectors or slices of primitive end types. They will also work with any arbitrarily complex user end type, as long as the required traits `PartialOrd` and `Copy`, are implemented for it (by the user).
 
 ## Usage
 
-Insert into your Cargo.toml file [dependencies] section: `sets = "^1"`  
-Import into your source file(s) the four structs for the four different types of sets and the two traits `SetOps` and `MutSetOps`. The following 'use' declaration imports everything:
+Insert into your `Cargo.toml` file [dependencies] section: `sets = "^1"`  
+Import into your source file(s) the four `Struct`s for the four different types of sets and the two traits `SetOps` and `MutSetOps`. The following 'use' declaration imports everything:
 
 ```rust
 use sets::{Set,OrderedSet,IndexedSet,RankedSet,SetOps,MutSetOps};
 ```
 
-The initialisers and convertors are associated with their structs, hence the `::` syntax, e.g.:
+## Initialisers and Converters
+
+`from_slice(), from_set(), from_indexed, from_ranked`
+
+Initialisers and converters are associated with their type `Struct`s, hence the `::` syntax is necessary, e.g.:
 
 ```rust
 // Unordered set from slice v
 let s = Set::from_slice(&v);
+// Automatically creates a descending sort index for v
+let si = IndexedSet::from_slice(&v,false);
 ```
 
 Example use of methods from the traits `SetOps`, and `MutSetOps`:
 
 ```rust
-// Mutable set with unique elements  
+// Mutable set su with unique elements from s 
 let mut su = s.nonrepeat();
-// su reversed in place into the opposite order  
+// su mutated-reversed into the opposite order  
 su.mreverse; 
 ```
 

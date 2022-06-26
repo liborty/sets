@@ -1,15 +1,15 @@
 [package]
 name = "sets"
-version = "1.0.4"
+version = "1.0.5"
 authors = ["Libor Spacek"]
 edition = "2021"
-description = "Sets implemented as generic vectors. Efficiently sorting, merging, ranking, searching, reversing, intersecting, etc."
+description = "Generic vectors as sets. Efficiently sorting, merging, ranking, searching, reversing, intersecting, etc."
 readme = "README.md"
 homepage = "https://github.com/liborty/sets"
 repository = "https://github.com/liborty/sets"
 license = "Apache-2.0"
-keywords = ["ordered-sets","merge-sort","set-operations","ranking-searching","generic-vectors"]
-categories = ["mathematics","algorithms","data-structures","rust-patterns","simulation"]
+keywords = ["set-operations","hash-sort","merge-sort","binary-search","ranking"]
+categories = ["algorithms","rust-patterns","simulation","data-structures","mathematics"]
 include = [
     "src/*.rs",
     "tests/*.rs",
