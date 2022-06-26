@@ -102,6 +102,8 @@ pub trait MutSetOps<T> {
 
 ## Release Notes (Latest First)
 
+**Version 1.0.5** - Documentation improvements.
+
 **Version 1.0.4** - `nonrepeat` now always returns an OrderedSet. Clarified `settest`.
 
 **Version 1.0.3** - updated to be compatible with `indxvec` version 1.2.1. Improved `munion`.
