@@ -1,4 +1,9 @@
+#![warn(missing_docs)]
+//! Operations on Sets, Ordered Sets, Indexed Sets, Ranked Sets
+
+/// Set operations, implemented for the four types of sets 
 pub mod traitimpls;
+/// Mutable set operations, implemented for the four types of sets
 pub mod mutimpls;
 
 use std::ops::{Deref,DerefMut};
@@ -16,6 +21,7 @@ pub fn trivindex(asc:bool,n:usize) -> Vec<usize> {
 /// Unordered set holding a generic Vec<T>. 
 /// Usually is the initial input.
 pub struct Set<T> {
+    /// The data vector
     pub v: Vec<T>
 } 
 
@@ -65,7 +71,9 @@ impl<T> Set<T> where T: Copy {
 /// Ordered Set, holding an explicitly sorted (ascending or descending) generic Vec<T>. 
 /// Often is the final result of some set operations.
 pub struct OrderedSet<T> {
+    /// Ascending order (true), descending (false)
     pub ascending: bool,
+    /// Ordered data vector
     pub v: Vec<T>,
 }
 /// Display trait implemented for struct OrderedSet.
@@ -124,8 +132,11 @@ impl<T> OrderedSet<T> {
 /// Struct holding an (unordered)git set and its sort index. 
 /// Thus it is an index ordered set (ascending or descending).
 pub struct IndexedSet<T> {
+    /// Ascending order (true), descending (false)    
     pub ascending: bool,
+    /// Unordered data vector
     pub v: Vec<T>,
+    /// Index giving the data sort order
     pub i: Vec<usize>,
 }
 /// Display implemented for struct IndexedSet.
@@ -165,8 +176,11 @@ impl<'a,T> IndexedSet<T> {
 /// Struct holding an unordered set 
 /// and a vector of its ranks (ascending or descending).
 pub struct RankedSet<T> {
+    /// Ascending order (true), descending (false)
     pub ascending: bool,
+    /// Unordered data vector
     pub v: Vec<T>,
+    /// Index giving the data ranks
     pub i: Vec<usize>,
 }
 /// Display implemented for struct RankedSet.
@@ -199,7 +213,7 @@ impl<T> RankedSet<T> {
     }
 }
 
-/// Common methods for all four of the set structs.
+/// Standard methods for all four of the set structs.
 pub trait SetOps<T> {
     /// reverses the vector of explicit sets and index of indexed sets
     fn reverse(&self) -> Self;
@@ -218,6 +232,8 @@ pub trait SetOps<T> {
     /// Removing s from self (i.e. self-s)
     fn difference(&self, s: &Self) -> OrderedSet<T>;
 }
+
+/// Mutable methods for all four of the set structs
 pub trait MutSetOps<T> {
     /// reverses the vector of explicit sets and index of indexed sets
     fn mreverse(&mut self);
