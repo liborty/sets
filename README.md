@@ -112,22 +112,4 @@ pub trait MutSetOps<T> {
 
 **Version 1.0.1** - some tidying up of code, no changes of functionality.
 
-**Version 1.0.0** - stable version with some minor improvements to README.md (this document). Updated to `indxvec = "^1"` and Rust edition 2021.
-
-**Version 0.1.8** - `infsup` now returns Struct MinMax (defined in crate `sets`).
-
-**Version 0.1.7** - just some cosmetic cleaning up. No change of functionality from the previous version.
-
-**Version 0.1.6** - implemented `MutSetOps` for all set types and added some tests.
-
-**Version 0.1.5** - implemented `SetOps` for `RankedSet`, making the implementations now complete. Future work: adding  mutable sets.
-
-**Version 0.1.4** - updated readme, implemented `SetOps` for `IndexedSet`.
-
-**Version 0.1.3** - fixed readme typos, improved tests, implemented `SetOps` for `OrderedSet`.
-
-**Version 0.1.2** - implemented `SetOps` trait for Struct `Set`. The other three Structs will follow in the next versions.
-
-**Version 0.1.1** - competed the associated functions for all initiations and conversions of the four set Structs.
-
-**Version 0.1.0** - first version, includes creation and conversions of the Structs representing the four types of sets.
+**Version 1.0.0** - stable version with some minor improvements to `README.md` (this document). Updated to `indxvec = "^1"` and Rust edition 2021.
