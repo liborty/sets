@@ -52,6 +52,7 @@ impl<T> DerefMut for Set<T> {
     }
 }
 
+/// Associated functions for conversions returning Set<T>
 impl<T> Set<T> where T: Copy {
     /// Initialiser - copies to a new Vec
     pub fn from_slice(s: &[T]) -> Self {
@@ -193,6 +194,8 @@ impl<'a,T: std::fmt::Display> std::fmt::Display for RankedSet<T> where T:Copy {
         writeln!(f, "{} Ranked Set\nSet:   {}\nRanks: {}", s, self.v.gr(),self.i.gr())
     }
 }
+
+/// Associated functions for conversions, returning RankedSet
 impl<T> RankedSet<T> {
     /// Initialiser, ranks an unordered slice
     pub fn from_slice(s: &[T], asc:bool) -> Self where T:PartialOrd+Copy {
@@ -213,7 +216,7 @@ impl<T> RankedSet<T> {
     }
 }
 
-/// Standard methods for all four of the set structs.
+/// Required methods for all four of the set structs.
 pub trait SetOps<T> {
     /// reverses the vector of explicit sets and index of indexed sets
     fn reverse(&self) -> Self;
@@ -224,7 +227,10 @@ pub trait SetOps<T> {
     /// True if m is a member of the set
     fn member(&self, m: T) -> bool;
     /// Some(index) of the first item found, or None.
-    fn search(&self, m: T)  -> Option<usize>;    
+    fn search(&self, m: T)  -> Option<usize>; 
+    /// Index of the next item in order, or self.len(). Mostly for non-members.
+    /// For unordered sets returns self.len(), too.
+    fn position(&self, m: T)  -> usize;       
     /// Union of two sets of the same type
     fn union(&self, s: &Self) -> Self;
     /// Intersection of two sets of the same type
@@ -235,6 +241,10 @@ pub trait SetOps<T> {
 
 /// Mutable methods for all four of the set structs
 pub trait MutSetOps<T> {
+    /// Deletes an item of the same end-type from self
+    fn mdelete(&mut self, item:T) -> bool;
+    /// Inserts an item of the same end-type to self
+    fn minsert(&mut self, item:T);
     /// reverses the vector of explicit sets and index of indexed sets
     fn mreverse(&mut self);
     /// Deletes any repetitions

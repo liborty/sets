@@ -87,7 +87,11 @@ Implements the following methods for all four types of sets:
 
 ```rust
 pub trait MutSetOps<T> {
-    /// reverses the vector of explicit sets and index of indexed sets
+    /// Deletes an item of the same end-type from self
+    fn mdelete(&mut self, item:T) -> bool;
+    /// Inserts an item of the same end-type to self
+    fn minsert(&mut self, item:T);
+    /// reverses the explicit sets, or index of indexed sets
     fn mreverse(&mut self);
     /// Deletes any repetitions
     fn mnonrepeat(&mut self); 
@@ -101,6 +105,8 @@ pub trait MutSetOps<T> {
 ```
 
 ## Release Notes (Latest First)
+
+**Version 1.0.6** - Added mutable methods `minsert` and `mdelete` to `MutSetOps`, that insert or remove one specific item to/from any of the sets. Added tests of them to `tests/tests.rs`. Updated `indxvec` dependency to its version `1.2.4` or greater.
 
 **Version 1.0.5** - Documentation improvements.
 

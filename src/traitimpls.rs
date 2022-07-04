@@ -3,11 +3,12 @@ use indxvec::{MinMax,Indices,Vecops};
 
 impl<T> SetOps<T> for Set<T> where T:Copy+PartialOrd {
 
+    /// Reverses a set
     fn reverse(&self) -> Self {
         Self { v: self.v.revs() }
     }
 
-    /// Sorts and deletes any repetitions
+    /// Sorts unordered and deletes any repetitions
     fn nonrepeat(&self) -> OrderedSet<T> { 
         OrderedSet { ascending:true, v: self.v.sortm(true).sansrepeat() }
     }
@@ -23,11 +24,17 @@ impl<T> SetOps<T> for Set<T> where T:Copy+PartialOrd {
         opt.is_some()     
     }
 
-    /// Search a Set for m.
+    /// Search a Set self for m.
     /// Returns the subscript of the first m or None
     fn search(&self, m: T)  -> Option<usize> {
         self.v.member(m) 
     }
+
+    /// Mostly for non-members. Index of the next item in order, or self.len(). 
+    /// For unordered sets returns self.len().
+    fn position(&self, _:T)  -> usize {
+        self.len()
+    }       
 
     /// Union of two unordered sets of the same end type T 
     fn union(&self, s: &Self) -> Self  { 
@@ -62,7 +69,7 @@ impl<T> SetOps<T> for OrderedSet<T> where T: Copy+PartialOrd {
     }
 
     /// Finds minimum, minimum's first index, maximum, maximum's first index
-    /// Much simpler for OrderedSet than for Set.
+    /// Much faster for OrderedSet than for Set.
     fn infsup(&self) -> MinMax<T> {
         let last = self.v.len()-1;
         if self.ascending { MinMax{min:self.v[0],minindex:0,max:self.v[last],maxindex:last} }
@@ -80,6 +87,13 @@ impl<T> SetOps<T> for OrderedSet<T> where T: Copy+PartialOrd {
     fn search(&self, m: T)  -> Option<usize> where T: PartialOrd {
         if self.ascending { self.v.memsearch(m) }
         else { self.v.memsearchdesc(m) }        
+    }
+
+    /// Mostly for non-members. Index of the next item in order, or self.len(). 
+    /// For unordered sets returns self.len(), too.
+    fn position(&self, m: T)  -> usize {
+        if self.ascending { self.binsearch(m) }
+        else { self.v.binsearchdesc(m) }
     }
 
     /// Union of two ordered sets  
@@ -144,6 +158,13 @@ impl<T> SetOps<T> for IndexedSet<T> where T: Copy+PartialOrd {
         else { self.v.memsearchdesc_indexed(&self.i,m) }        
     }
 
+    /// Mostly for non-members. Index of the next item in order, or self.len(). 
+    /// For unordered sets returns self.len(), too.
+    fn position(&self, m: T)  -> usize {
+        if self.ascending { self.v.binsearch_indexed(&self.i,m) }
+        else { self.v.binsearchdesc_indexed(&self.i,m) }        
+    }
+
     /// Union of two IndexedSets. Returns new IndexedSet 
     fn union(&self, s: &Self) -> IndexedSet<T> {
         let tmp1; let tmp2;
@@ -177,7 +198,7 @@ impl<T> SetOps<T> for RankedSet<T> where T: Copy+PartialOrd {
 
     /// switches between ascending and descending ranks, 
     /// which is what is logically expected here 
-    /// but it is not the same as a literal reversal of the ranks!
+    /// but it is not the same as a literal reversal of the ranks index!
     fn reverse(&self) -> Self {
         Self { ascending: !self.ascending, v: self.v.to_vec(), i: self.i.complindex() }
     }
@@ -209,6 +230,13 @@ impl<T> SetOps<T> for RankedSet<T> where T: Copy+PartialOrd {
     fn search(&self, m: T)  -> Option<usize> {
         if self.ascending { self.v.memsearch_indexed(&self.i.invindex(),m) }
         else { self.v.memsearchdesc_indexed(&self.i.invindex(),m) }        
+    }
+
+    /// Mostly for non-members. Index of the next item in order, or self.len(). 
+    /// For unordered sets returns self.len(), too.
+    fn position(&self, m: T)  -> usize {
+        if self.ascending { self.v.binsearch_indexed(&self.i.invindex(),m) }
+        else { self.v.binsearchdesc_indexed(&self.i.invindex(),m) }        
     }
 
     /// Union of two RankedSets. Returns new RankedSet 
