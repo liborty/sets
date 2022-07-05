@@ -23,10 +23,7 @@ impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd {
     /// and swapping the items
     fn mreverse(&mut self) { 
         let n = self.v.len();
-        for i in 0..n/2 {
-            let temp = self.v[i];
-            self.v[i] = self.v[n-i-1];
-            self.v[n-i-1] = temp } 
+        for i in 0..n/2 { self.swap(i,n-i-1) }
     }
 
     /// Deletes any repetitions
@@ -75,10 +72,7 @@ impl<T> MutSetOps<T> for OrderedSet<T> where T:Copy+PartialOrd {
     fn mreverse(&mut self) { 
         self.ascending = !self.ascending;
         let n = self.v.len();
-        for i in 0..n/2 {
-            let temp = self.v[i];
-            self.v[i] = self.v[n-i-1];
-            self.v[n-i-1] = temp } 
+        for i in 0..n/2 { self.swap(i,n-i-1) } 
     }
 
     /// Deletes any repetitions
@@ -251,6 +245,7 @@ impl<T> MutSetOps<T> for RankedSet<T> where T: Copy+PartialOrd {
         // and insert its subscipt into the same place in the rank index    
         self.i.push(ix);
     }
+    
     /// just make the ranks descending
     fn mreverse(&mut self) {
         self.ascending = !self.ascending;

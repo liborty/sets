@@ -6,7 +6,6 @@ pub mod traitimpls;
 /// Mutable set operations, implemented for the four types of sets
 pub mod mutimpls;
 
-// use crate::{MutSetOps};
 use std::ops::{Deref,DerefMut};
 use indxvec::{MinMax,Printing,Indices,Vecops};
 
@@ -21,7 +20,6 @@ pub fn trivindex(asc:bool,n:usize) -> Vec<usize> {
 
 /// Unordered set holding a generic Vec<T>. 
 /// Usually is the initial input.
-#[derive(Clone)]
 pub struct Set<T> {
     /// The data vector
     pub v: Vec<T>
@@ -47,15 +45,22 @@ impl<T> Deref for Set<T>  {
     }
 }
 
-/// Implementation of DerefMut trait for struct Self.
+/// Implementation of DerefMut trait for struct Set.
 impl<T> DerefMut for Set<T> { 
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.v
     }
 }
 
+/// Implementation of Clone trait for struct Set.    
+impl<T> Clone for Set<T> where T:Clone {
+    fn clone(&self) -> Self {
+        Set{ v: self.v.to_vec() }
+    }
+}
+
 /// Associated functions for conversions returning Set<T>
-impl<T> Set<T> where T: Copy {
+impl<T> Set<T> where T: Copy+PartialOrd {
 
     /// Initialiser - copies to a new Vec
     pub fn from_slice(s: &[T]) -> Self {
@@ -74,7 +79,6 @@ impl<T> Set<T> where T: Copy {
 
 /// Ordered Set, holding an explicitly sorted (ascending or descending) generic Vec<T>. 
 /// Often is the final result of some set operations.
-#[derive(Clone)]
 pub struct OrderedSet<T> {
     /// Ascending order (true), descending (false)
     pub ascending: bool,
@@ -104,7 +108,13 @@ impl<T> DerefMut for OrderedSet<T> {
     }
 }
 
-impl<T> OrderedSet<T> {
+/// Implementation of Clone trait for struct OrderedSet.    
+impl<T> Clone for OrderedSet<T> where T:Clone {
+    fn clone(&self) -> Self {
+        OrderedSet{ ascending: self.ascending, v: self.v.to_vec() }
+    }
+}
+impl<T> OrderedSet<T>  where T: Copy {
 
     /// Constructor from an ascending ordered slice
     pub fn from_asc_slice(s: &[T]) -> Self where T:PartialOrd+Copy {        
@@ -136,7 +146,6 @@ impl<T> OrderedSet<T> {
 
 /// Struct holding an (unordered)git set and its sort index. 
 /// Thus it is an index ordered set (ascending or descending).
-#[derive(Clone)]
 pub struct IndexedSet<T> {
     /// Ascending order (true), descending (false)    
     pub ascending: bool,
@@ -156,8 +165,15 @@ impl<'a,T: std::fmt::Display> std::fmt::Display for IndexedSet<T> where T:Copy {
             s, self.v.gr(), self.i.gr())
     }
 }
+/// Implementation of Clone trait for struct IndexedSet.    
+impl<T> Clone for IndexedSet<T> where T:Clone {
+    fn clone(&self) -> Self {
+        IndexedSet{ ascending: self.ascending, v: self.v.to_vec(), i: self.i.to_vec() }
+    }
+}
 
-impl<'a,T> IndexedSet<T> {
+impl<'a,T> IndexedSet<T> where T:Copy {
+
     /// Initialiser, indexsorts an unordered slice
     pub fn from_slice(s: &'a[T], asc:bool) -> Self where T:PartialOrd+Copy {
         if asc { IndexedSet{ ascending:true, v:s.to_vec(), i:s.sortidx() } }
@@ -181,8 +197,6 @@ impl<'a,T> IndexedSet<T> {
 
 /// Struct holding an unordered set 
 /// and a vector of its ranks (ascending or descending).
-
-#[derive(Clone)]
 pub struct RankedSet<T> {
     /// Ascending order (true), descending (false)
     pub ascending: bool,
@@ -201,9 +215,16 @@ impl<'a,T: std::fmt::Display> std::fmt::Display for RankedSet<T> where T:Copy {
         writeln!(f, "{} Ranked Set\nSet:   {}\nRanks: {}", s, self.v.gr(),self.i.gr())
     }
 }
+/// Implementation of Clone trait for struct RankedSet.    
+impl<T> Clone for RankedSet<T> where T:Clone {
+    fn clone(&self) -> Self {
+        RankedSet{ ascending: self.ascending, v: self.v.to_vec(), i: self.i.to_vec() }
+    }
+}
 
 /// Associated functions for conversions, returning RankedSet
-impl<T> RankedSet<T> {
+impl<T> RankedSet<T> where T:Copy {
+
     /// Initialiser, ranks an unordered slice
     pub fn from_slice(s: &[T], asc:bool) -> Self where T:PartialOrd+Copy {
         RankedSet{ ascending:asc, v:s.to_vec(), i:s.rank(asc) }
@@ -227,9 +248,9 @@ impl<T> RankedSet<T> {
 pub trait SetOps<T>  where Self: MutSetOps<T> + Sized {
     /// reverses the vector of explicit sets and index of indexed sets
     fn reverse(&self) -> Self;
-
     /// Deletes any repetitions
-    fn nonrepeat(&self) -> Self;  
+    fn nonrepeat(&self) -> Self;
+    /// fn nonrepeat(&self) -> Self;  
     /// Finds minimum, minimum's first index, maximum, maximum's first index  
     fn infsup(&self) -> MinMax<T>; 
     /// True if m is a member of the set
