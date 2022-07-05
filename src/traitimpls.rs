@@ -6,11 +6,14 @@ impl<T> SetOps<T> for Set<T> where T:Copy+PartialOrd {
     /// Reverses a set
     fn reverse(&self) -> Self {
         Self { v: self.v.revs() }
-    }
+    } 
 
-    /// Sorts unordered and deletes any repetitions
-    fn nonrepeat(&self) -> OrderedSet<T> { 
-        OrderedSet { ascending:true, v: self.v.sortm(true).sansrepeat() }
+    /// Deletes any repetitions
+    fn nonrepeat(&self) -> Self { 
+        let &mut scopy = self.v;
+        scopy.mnonrepeat();
+        scopy
+        // OrderedSet { ascending:true, v: self.v.sortm(true).sansrepeat() }
     }
 
     /// Finds minimum, minimum's first index, maximum, maximum's first index of &[T] 
@@ -61,11 +64,6 @@ impl<T> SetOps<T> for OrderedSet<T> where T: Copy+PartialOrd {
 
     fn reverse(&self) -> Self where T: Copy {
         Self { ascending: !self.ascending, v: self.v.revs() }
-    }
-
-    /// Deletes any repetitions, in either order
-    fn nonrepeat(&self) -> Self { 
-        Self { ascending: self.ascending, v: self.v.sansrepeat() }
     }
 
     /// Finds minimum, minimum's first index, maximum, maximum's first index
@@ -128,13 +126,8 @@ impl<T> SetOps<T> for IndexedSet<T> where T: Copy+PartialOrd {
     /// just reverse the index
     fn reverse(&self) -> Self where T: Copy {
         Self { ascending: !self.ascending, v: self.v.to_vec(), i: self.i.revindex() }
-        }
-    
-    /// Deletes repetitions.
-    fn nonrepeat(&self) -> OrderedSet<T> {
-        OrderedSet { ascending: self.ascending, 
-            v: self.i.unindex(&self.v,true).sansrepeat()  }      
-    }
+    }    
+
  
     /// Finds minimum, minimum's first index, maximum, maximum's first index
     fn infsup(&self) -> MinMax<T> {
@@ -201,13 +194,8 @@ impl<T> SetOps<T> for RankedSet<T> where T: Copy+PartialOrd {
     /// but it is not the same as a literal reversal of the ranks index!
     fn reverse(&self) -> Self {
         Self { ascending: !self.ascending, v: self.v.to_vec(), i: self.i.complindex() }
-    }
-        
-    /// Deletes repetitions.
-    fn nonrepeat(&self) -> OrderedSet<T> { 
-        OrderedSet { ascending: self.ascending, 
-        v: self.i.invindex().unindex(&self.v,true).sansrepeat()  } 
-    }
+    }     
+
      
     /// Finds minimum, minimum's first index, maximum, maximum's first index
     fn infsup(&self) -> MinMax<T> {

@@ -6,6 +6,7 @@ pub mod traitimpls;
 /// Mutable set operations, implemented for the four types of sets
 pub mod mutimpls;
 
+// use crate::{MutSetOps};
 use std::ops::{Deref,DerefMut};
 use indxvec::{MinMax,Printing,Indices,Vecops};
 
@@ -20,6 +21,7 @@ pub fn trivindex(asc:bool,n:usize) -> Vec<usize> {
 
 /// Unordered set holding a generic Vec<T>. 
 /// Usually is the initial input.
+#[derive(Clone)]
 pub struct Set<T> {
     /// The data vector
     pub v: Vec<T>
@@ -38,7 +40,7 @@ impl<T: std::fmt::Display> std::fmt::Display for Set<T> where T:Copy {
 /// contained in s and eventually to its slice and will not throw a type error.
 /// Of course, in this particular example, it would have been more correct to invoke 
 /// `OrderedSet::from_set(&s,true)` in the first place.
-impl<T> Deref for Set<T> {
+impl<T> Deref for Set<T>  {
     type Target = Vec<T>; 
     fn deref(&self) -> &Self::Target {
         &self.v
@@ -54,6 +56,7 @@ impl<T> DerefMut for Set<T> {
 
 /// Associated functions for conversions returning Set<T>
 impl<T> Set<T> where T: Copy {
+
     /// Initialiser - copies to a new Vec
     pub fn from_slice(s: &[T]) -> Self {
         Set { v: s.to_vec() }
@@ -71,6 +74,7 @@ impl<T> Set<T> where T: Copy {
 
 /// Ordered Set, holding an explicitly sorted (ascending or descending) generic Vec<T>. 
 /// Often is the final result of some set operations.
+#[derive(Clone)]
 pub struct OrderedSet<T> {
     /// Ascending order (true), descending (false)
     pub ascending: bool,
@@ -132,6 +136,7 @@ impl<T> OrderedSet<T> {
 
 /// Struct holding an (unordered)git set and its sort index. 
 /// Thus it is an index ordered set (ascending or descending).
+#[derive(Clone)]
 pub struct IndexedSet<T> {
     /// Ascending order (true), descending (false)    
     pub ascending: bool,
@@ -176,6 +181,8 @@ impl<'a,T> IndexedSet<T> {
 
 /// Struct holding an unordered set 
 /// and a vector of its ranks (ascending or descending).
+
+#[derive(Clone)]
 pub struct RankedSet<T> {
     /// Ascending order (true), descending (false)
     pub ascending: bool,
@@ -217,11 +224,12 @@ impl<T> RankedSet<T> {
 }
 
 /// Required methods for all four of the set structs.
-pub trait SetOps<T> {
+pub trait SetOps<T>  where Self: MutSetOps<T> + Sized {
     /// reverses the vector of explicit sets and index of indexed sets
     fn reverse(&self) -> Self;
+
     /// Deletes any repetitions
-    fn nonrepeat(&self) -> OrderedSet<T>;
+    fn nonrepeat(&self) -> Self;  
     /// Finds minimum, minimum's first index, maximum, maximum's first index  
     fn infsup(&self) -> MinMax<T>; 
     /// True if m is a member of the set
