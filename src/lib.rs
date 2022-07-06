@@ -9,8 +9,6 @@ pub mod mutimpls;
 use std::ops::{Deref,DerefMut};
 use indxvec::{MinMax,Printing,Indices,Vecops};
 
-// const EMPTYIDX:Vec<usize> = vec![];
-
 /// Constructs a trivial index (for already sorted sets), 
 /// of required ascending or descending order and size
 pub fn trivindex(asc:bool,n:usize) -> Vec<usize> { 
@@ -18,53 +16,93 @@ pub fn trivindex(asc:bool,n:usize) -> Vec<usize> {
     else { Vec::from_iter((0..n).rev()) }
 }
 
-/// Unordered set holding a generic Vec<T>. 
-/// Usually is the initial input.
+/// Display helper function
+pub fn ascdesc(asc:bool) -> &'static str {
+    if asc { "Ascending" } else { "Descending" }
+}
+
+pub enum SType {
+    Empty,
+    Unordered,
+    Ordered,
+    Indexed,
+    Ranked
+}
+
 pub struct Set<T> {
-    /// The data vector
-    pub v: Vec<T>
-} 
+    pub stype: SType,
+    pub ascending: bool,
+    pub data: Vec<T>,
+    pub index: Vec<usize>
+}
+
+// static EMPTYSET:Set<f64> = Set{ stype:SType::Empty, ascending:true, data:vec![], index:vec![]};
+
+/// Default values for Set<T>
+/// Note that the data and index Vecs are empty 
+/// but still of the end types T and <usize> respectively
+impl<T> Default for Set<T> {
+    fn default() -> Self { 
+        Set { stype:SType::Empty, ascending:true, data:vec![], index:vec![] }
+    }
+}
 
 /// Implementation of Display trait for struct Set.
 impl<T: std::fmt::Display> std::fmt::Display for Set<T> where T:Copy {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        writeln!(f, "Unordered Set:\n{}",self.v.gr())
-    }
-}
-
-/// Implementation of Deref trait for struct Set.
-/// Thus, for instance, calling `OrderedSet::from_slice(&s,true)`,
-/// where s is an instance of Set, will dereference s to the vector 
-/// contained in s and eventually to its slice and will not throw a type error.
-/// Of course, in this particular example, it would have been more correct to invoke 
-/// `OrderedSet::from_set(&s,true)` in the first place.
-impl<T> Deref for Set<T>  {
-    type Target = Vec<T>; 
-    fn deref(&self) -> &Self::Target {
-        &self.v
-    }
-}
-
-/// Implementation of DerefMut trait for struct Set.
-impl<T> DerefMut for Set<T> { 
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.v
+        match self.stype {
+            Empty =>  writeln!(f,"Empty Set"),
+            Unordered => writeln!(f, "Unordered Set\n{}",self.data.gr()),
+            Ordered => writeln!(f, "Ordered {} Set\nData: {}",ascdesc(self.ascending),self.data.gr()),
+            Indexed => writeln!(f, "Indexed {} Set\nData: {}\nIndex: {}",ascdesc(self.ascending),self.data.gr(),self.index.yl()),
+            Ranked => writeln!(f, "Ranked {} Set\nData: {}\nRanks: {}",ascdesc(self.ascending),self.data.gr(),self.index.yl()),
+        }
     }
 }
 
 /// Implementation of Clone trait for struct Set.    
 impl<T> Clone for Set<T> where T:Clone {
     fn clone(&self) -> Self {
-        Set{ v: self.v.to_vec() }
+        Set { stype:self.stype, ascending:self.ascending, data:self.data.to_vec(), index:self.index.to_vec() }
     }
 }
 
-/// Associated functions for conversions returning Set<T>
+/// Associated functions for conversions returning Set<T> = Self
 impl<T> Set<T> where T: Copy+PartialOrd {
 
-    /// Initialiser - copies to a new Vec
+    /// Initialiser - creates a new Unordered Vec
     pub fn from_slice(s: &[T]) -> Self {
-        Set { v: s.to_vec() }
+        let mut newset = Set::default();
+        newset.stype = SType::Unordered;
+        newset.data = s.to_vec();
+        newset
+    }
+
+    pub fn to_ordered(&self,asc:bool) -> Self {
+        match self.stype {
+            Empty => *self, // empty set is unique
+            Unordered => Self{ stype:SType::Ordered, ascending:asc, data:self.data.sortm(asc), index:vec![] },
+            Ordered => *self, // no op
+            Indexed => Self{ stype:SType::Ordered, ascending:asc, 
+                data:self.index.unindex(&self.data, asc),
+                index:vec![] },
+            Ranked => Self{ stype:SType::Ordered, ascending:asc, 
+                data:self.index.invindex().unindex(&self.data, asc),
+                index:vec![] },
+        }    
+    }
+
+    pub fn to_indexed(&self,asc:bool) -> Self {
+        match self.stype {
+            Empty => *self,
+            Unordered => Self{ stype:SType::Indexed, ascending:asc, data:self.data, 
+                index: if asc {self.data.sortidx()} else {self.data.sortidx().revs()} },
+            Ordered => Self{ stype:SType::Indexed, ascending:asc, data:self.data, 
+                index: trivindex(self.ascending == asc,self.data.len()) },
+            Indexed => *self, 
+            Ranked => Self{ stype:SType::Indexed, ascending:asc, data:self.data,             
+                index: trivindex(self.ascending == asc,self.data.len()) }
+        }    
     }
  
     /// Simply copies the slice and throws away its index
@@ -249,7 +287,7 @@ pub trait SetOps<T>  where Self: MutSetOps<T> + Sized {
     /// reverses the vector of explicit sets and index of indexed sets
     fn reverse(&self) -> Self;
     /// Deletes any repetitions
-    fn nonrepeat(&self) -> Self;
+    fn nonrepeat(&self) -> Self;git merge
     /// fn nonrepeat(&self) -> Self;  
     /// Finds minimum, minimum's first index, maximum, maximum's first index  
     fn infsup(&self) -> MinMax<T>; 
