@@ -7,39 +7,36 @@
 
 ## Description
 
-This crate defines `Structs: Set, OrderedSet, IndexedSet, RankedSet` and methods acting on them. These `Struct`s are type-safe wrappers for the more primitive imported functions and methods from crate `indxvec`.
+This crate defines `Struct: Set`, encompassing five kinds of sets: Empty, Unordered, Ordered, Indexed, Ranked, and common methods acting on them. This `Struct` is a type-safe wrapper for the more primitive imported functions and methods from crate `indxvec`.
 
-The main capabilities of `sets` include: efficient sorting, ranking, merging, searching and indices manipulations. These methods work with generic vectors or slices of primitive end types. They will also work with any arbitrarily complex user end type, as long as the required traits `PartialOrd` and `Copy`, are implemented for it (by the user).
+The main capabilities of `Sets` include the usual set operations, plus efficient sorting, ranking, searching, etc. The aim is to avoid moving data as much as possible. This is done by manipulating indices instead. These methods work on generic vectors (or slices) of primitive end types `<T>`. They will also work on any arbitrarily complex user end type, as long as the required traits `PartialOrd` and `Copy`, are implemented for it by the user.
 
 ## Usage
 
-Insert into your `Cargo.toml` file [dependencies] section: `sets = "^1"`  
-Import into your source file(s) the four `Struct`s for the four different types of sets and the two traits `SetOps` and `MutSetOps`. The following 'use' declaration imports everything:
+Insert into `Cargo.toml` file, under [dependencies]: `sets = "^1"`  
+The following 'use' declaration in source files makes available everything:
 
 ```rust
-use sets::{Set,OrderedSet,IndexedSet,RankedSet,SetOps,MutSetOps};
+use sets::{Set,MutSetOps};
 ```
 
 ## Initialisers and Converters
 
-`from_slice(), from_set(), from_indexed, from_ranked`
+`unordered_from_slice()` wraps raw data slice &[T] in Set of Unordered type.
 
-Initialisers and converters are associated with their type `Struct`s, hence the `::` syntax is necessary, e.g.:
+`to_unordered, to_ordered, to_indexed, to_ranked` implement conversions to all types of Sets from all types.
+
+Initialisers and converters are associated with the Set Struct, hence the `::` syntax is necessary, e.g.:
 
 ```rust
 // Unordered set from slice v
-let s = Set::from_slice(&v);
-// Automatically creates a descending sort index for v
-let si = IndexedSet::from_slice(&v,false);
-```
-
-Example use of methods from the traits `SetOps`, and `MutSetOps`:
-
-```rust
-// Mutable set su with unique elements from s 
-let mut su = s.nonrepeat();
-// su mutated-reversed into the opposite order  
-su.mreverse; 
+let su = Set::from_slice(&v);
+// Creates a descending sort index for v
+let si = s.to_indexed(false);
+// A mutable indexed set msiu, with unique elements, from si 
+let mut msiu = si.nonrepeat();
+// msiu mutated-reversed in place into the opposite order  
+msiu.mreverse; 
 ```
 
 It is highly recommended to read and run `tests/tests.rs` for many more examples of usage. Use a single thread to run them. It may be a bit slower but it will write the results in the right order:
@@ -48,42 +45,17 @@ It is highly recommended to read and run `tests/tests.rs` for many more examples
 cargo test --release -- --test-threads=1 --nocapture --color always
 ```
 
-## Trait SetOps
+## Set Associated Functions
 
-Implements the following methods for all four types of sets (`Struct`s):
+ Some of the methods are more efficient for the ordered and indexed sets, rather than for the unordered sets. For example, `member` and `search` are then able to use binary search. Union is like the classical merge but only one copy of items that were present in both input sets is kept. To remove repetitions from a single set at any other time, use `nonrepeat`.
 
-```rust
-pub trait SetOps<T> {
-    /// reverses the vector of explicit sets and index of indexed sets
-    fn reverse(&self) -> Self;
-    /// Deletes any repetitions
-    fn nonrepeat(&self) -> Self;
-    /// Finds minimum, its first index, maximum, its first index  
-    fn infsup(&self) -> MinMax<T>; 
-    /// True if m is a member of the set
-    fn member(&self, m: T) -> bool;
-    /// Some(index) of the first item found, or None.
-    fn search(&self, m: T)  -> Option<usize>;    
-    /// Union of two sets of the same type
-    fn union(&self, s: &Self) -> Self;
-    /// Intersection of two sets of the same type
-    fn intersection(&self, s: &Self) -> OrderedSet<T>;
-    /// Removing s from self (i.e. self-s)
-    fn difference(&self, s: &Self) -> OrderedSet<T>;
-}
-```
-
- Some of these methods are more efficient for the ordered and indexed sets, rather than for the unordered sets. For example, `member` and `search` are then able to use binary search. Union is like the classical merge but only one copy of items that were present in both input sets is kept. To remove repetitions from a single set at any other time, use `nonrepeat`.
-
-`intersection` and `difference`, when applied to IndexedSet(s) and RankedSet(s) return an OrderedSet as a result. This result can be explicitly converted to other types of sets when needed. 
-
-`Union` returns the same type as the one to which it is applied. Thus, for example, union of two (unordered) `Set`s will produce another unordered `Set` (just their concatenation).
+ The set operations between two operands are required to have the same end-type `<T>`. This is possibly a good type discipline but it could easily be relaxed.
 
 ## Trait MutSetOps
 
 Here 'm' in the methods' names stands for 'mutable'. They overwrite the mutable set to which they are applied with the result. Thus they are not *functional* but in the context of handling large vectors, they are often simpler and more efficient. At the price of destroying the previous contents of self, of course.
 
-Implements the following methods for all four types of sets:
+Implements the following methods for &mut Set:
 
 ```rust
 pub trait MutSetOps<T> {
@@ -91,7 +63,8 @@ pub trait MutSetOps<T> {
     fn mdelete(&mut self, item:T) -> bool;
     /// Inserts an item of the same end-type to self
     fn minsert(&mut self, item:T);
-    /// reverses the explicit sets, or index of indexed sets
+    /// reverses the explicit sets, 
+    /// or index of indexed sets
     fn mreverse(&mut self);
     /// Deletes any repetitions
     fn mnonrepeat(&mut self); 
@@ -105,6 +78,8 @@ pub trait MutSetOps<T> {
 ```
 
 ## Release Notes (Latest First)
+
+**Version 1.1.0** - Joined all four types of sets into one Struct Set. Simplified code using enum generics. 
 
 **Version 1.0.6** - Added mutable methods `minsert` and `mdelete` to `MutSetOps`, that insert or remove one specific item to/from any of the sets. Added tests of them to `tests/tests.rs`. Updated `indxvec` dependency to its version `1.2.4` or greater.
 

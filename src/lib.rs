@@ -1,12 +1,9 @@
 #![warn(missing_docs)]
-//! Operations on Sets, Ordered Sets, Indexed Sets, Ranked Sets
+//! Operations on  Unordered Sets, Ordered Sets, Indexed Sets, Ranked Sets
 
-/// Set operations, implemented for the four types of sets 
-pub mod traitimpls;
-/// Mutable set operations, implemented for the four types of sets
+/// Mutable set operations, implemented for &mut Set
 pub mod mutimpls;
 
-use std::ops::{Deref,DerefMut};
 use indxvec::{MinMax,Printing,Indices,Vecops, here};
 
 /// Constructs a trivial index (for already sorted sets), 
@@ -79,11 +76,25 @@ impl<T> Clone for Set<T> where T:Clone {
 impl<T> Set<T> where T: Copy+PartialOrd {
 
     /// Initialiser - creates a new Unordered Vec
-    pub fn from_slice(s: &[T]) -> Self {
-        let mut newset = Set::default();
-        newset.stype = SType::Unordered;
-        newset.data = s.to_vec();
+    pub fn unordered_from_slice(s: &[T]) -> Self { 
+        let mut newset = Set::default(); // returns this empty set for zero lentgh s
+        if s.len() > 0 { // have some data, so modify the newset with it
+            newset.stype = SType::Unordered;
+            newset.data = s.to_vec(); 
+        }; 
         newset
+    }
+
+    /// Converter - to unordered Set
+    /// Caution: this just throws away the valuable index!
+    pub fn to_unordered(&self,s: &[T]) -> Self { 
+        match self.stype {
+            Empty => *self, // empty set is unique
+            Unordered => *self, // no op
+            Ordered => Self{ stype:SType::Unordered, ascending:true, data:self.data, index:vec![] },
+            Indexed => Self{ stype:SType::Unordered, ascending:true, data:self.data, index:vec![] }, 
+            Ranked => Self{ stype:SType::Unordered, ascending:true, data:self.data, index:vec![] }
+        }
     }
 
     pub fn to_ordered(&self,asc:bool) -> Self {
@@ -242,6 +253,7 @@ impl<T> Set<T> where T: Copy+PartialOrd {
         }
     }   
 }
+
 /// Mutable methods for all four of the set structs
 pub trait MutSetOps<T> {
     /// Deletes an item of the same end-type from self
