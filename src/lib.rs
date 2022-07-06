@@ -7,7 +7,7 @@ pub mod traitimpls;
 pub mod mutimpls;
 
 use std::ops::{Deref,DerefMut};
-use indxvec::{MinMax,Printing,Indices,Vecops};
+use indxvec::{MinMax,Printing,Indices,Vecops, here};
 
 /// Constructs a trivial index (for already sorted sets), 
 /// of required ascending or descending order and size
@@ -28,6 +28,13 @@ pub enum SType {
     Indexed,
     Ranked
 }
+
+/// Implementation of Display trait for struct Set.
+impl std::fmt::Display for SType {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        writeln!(f,"{}",self.to_str())
+        }
+    }
 
 pub struct Set<T> {
     pub stype: SType,
@@ -56,6 +63,7 @@ impl<T: std::fmt::Display> std::fmt::Display for Set<T> where T:Copy {
             Ordered => writeln!(f, "Ordered {} Set\nData: {}",ascdesc(self.ascending),self.data.gr()),
             Indexed => writeln!(f, "Indexed {} Set\nData: {}\nIndex: {}",ascdesc(self.ascending),self.data.gr(),self.index.yl()),
             Ranked => writeln!(f, "Ranked {} Set\nData: {}\nRanks: {}",ascdesc(self.ascending),self.data.gr(),self.index.yl()),
+            _ => panic!("{} Unrecognised Set field {}",here!(),self.stype)
         }
     }
 }
@@ -171,48 +179,69 @@ impl<T> Set<T> where T: Copy+PartialOrd {
     }
 
     /// Finds minimum, minimum's first index, maximum, maximum's first index  
-    pub fn infsup(&self) -> MinMax<T> {
+    pub fn infsup(&self) -> MinMax<T> where T: Default {
         match self.stype {
-            Empty => *self,
-            Unordered => Self{ stype:SType::Ranked, ascending:asc, data:self.data, 
-                index: if asc {self.data.sortidx().invindex()} 
-                    else {self.data.sortidx().revs().invindex()} },
-            Ordered => Self{ stype:SType::Ranked, ascending:asc, data:self.data, 
-                index: trivindex(self.ascending == asc,self.data.len()) },
-            Indexed => Self{ stype:SType::Ranked, ascending:asc, data:self.data,             
-                index: if self.ascending == asc {self.index.invindex()} 
-                    else {self.index.revs().invindex()}}, 
-            Ranked => *self
+            Empty => Default::default(),
+            Unordered => self.data.minmax(),  
+            Ordered => {
+                let last = self.data.len()-1;
+                if self.ascending { MinMax{min:self.data[0],minindex:0,max:self.data[last],maxindex:last} }
+                else { MinMax{min:self.data[last],minindex:last,max:self.data[0],maxindex:0} } 
+            },
+            Indexed => {
+                let last = self.data.len()-1;
+                let firstval = self.data[self.index[0]];
+                let lastval = self.data[self.index[last]];
+                if self.ascending { MinMax{min:firstval,minindex:self.index[0],max:lastval,maxindex:self.index[last]} }
+                else { MinMax{min:lastval,minindex:self.index[last],max:firstval,maxindex:self.index[0]} }
+            }, 
+            Ranked => {
+                let last = self.data.len()-1;
+                let si = self.index.invindex(); // ranks -> sort index
+                let firstval = self.data[si[0]];
+                let lastval = self.data[si[last]];
+                    if self.ascending { MinMax{min:firstval,minindex:si[0],max:lastval,maxindex:si[last]} }
+                    else { MinMax{min:lastval,minindex:si[last],max:firstval,maxindex:si[0]} }
+            }
         }      
-    } 
-
-}   
-
-
-/// Required methods for all four of the set structs.
-pub trait SetOps<T>  where Self: MutSetOps<T> + Sized {
-    /// reverses the vector of explicit sets and index of indexed sets
-    fn reverse(&self) -> Self;
-    /// Deletes any repetitions
-    fn nonrepeat(&self) -> Self;
-    /// fn nonrepeat(&self) -> Self;  
-    /// Finds minimum, minimum's first index, maximum, maximum's first index  
-    fn infsup(&self) -> MinMax<T>; 
+    }
+    
+    /// Search a Set self for m.
+    /// Returns the subscript of the first m or None   
+    pub fn search(&self, m: T) -> Option<usize> { 
+        match self.stype {
+            Empty => None,
+            Unordered => self.data.member(m), // from indxvec ,
+            Ordered => if self.ascending { self.data.memsearch(m)}
+                else {self.data.memsearchdesc(m)},     
+            Indexed => if self.ascending { self.data.memsearch_indexed(&self.index,m) }
+                else { self.data.memsearchdesc_indexed(&self.index,m) },
+            Ranked => if self.ascending { self.data.memsearch_indexed(&self.index.invindex(),m) }
+                else { self.data.memsearchdesc_indexed(&self.index.invindex(),m) }, 
+            }       
+    }       
+    
     /// True if m is a member of the set
-    fn member(&self, m: T) -> bool;
-    /// Some(index) of the first item found, or None.
-    fn search(&self, m: T)  -> Option<usize>; 
-    /// Index of the next item in order, or self.len(). Mostly for non-members.
-    /// For unordered sets returns self.len(), too.
-    fn position(&self, m: T)  -> usize;       
-    /// Union of two sets of the same type
-    fn union(&self, s: &Self) -> Self;
-    /// Intersection of two sets of the same type
-    fn intersection(&self, s: &Self) -> OrderedSet<T>;
-    /// Removing s from self (i.e. self-s)
-    fn difference(&self, s: &Self) -> OrderedSet<T>;
+    /// Throws away the subscript found by `search`
+    pub fn member(&self, m: T) -> bool {
+        self.search(m).is_some() 
+    }
+    
+    /// Mostly for non-members. Index of the next item in order, or self.len(). 
+    /// Unordered sets return self.data.len() as 'not found'.
+    pub fn position(&self, m:T)  -> usize {
+        match self.stype {
+            Empty => 0_usize,
+            Unordered => self.data.len(),
+            Ordered => if self.ascending { self.data.binsearch(m)}
+                else {self.data.binsearchdesc(m)},     
+            Indexed => if self.ascending { self.data.binsearch_indexed(&self.index,m) }
+                else { self.data.binsearchdesc_indexed(&self.index,m) },
+            Ranked => if self.ascending { self.data.binsearch_indexed(&self.index.invindex(),m) }
+            else { self.data.binsearchdesc_indexed(&self.index.invindex(),m) },   
+        }
+    }   
 }
-
 /// Mutable methods for all four of the set structs
 pub trait MutSetOps<T> {
     /// Deletes an item of the same end-type from self
