@@ -8,12 +8,6 @@ impl<T> SetOps<T> for Set<T> where T:Copy+PartialOrd {
         Self { v: self.v.revs() }
     } 
 
-    /// Deletes any repetitions
-    fn nonrepeat(&self) -> Self { 
-        let mut scopy =  self.clone();
-        scopy.mnonrepeat();
-        scopy
-    }
 
     /// Finds minimum, minimum's first index, maximum, maximum's first index of &[T] 
     fn infsup(&self) -> MinMax<T> {

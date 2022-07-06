@@ -67,7 +67,7 @@ impl<T> Clone for Set<T> where T:Clone {
     }
 }
 
-/// Associated functions for conversions returning Set<T> = Self
+/// Associated functions for conversions and set operations returning Set<T> = Self
 impl<T> Set<T> where T: Copy+PartialOrd {
 
     /// Initialiser - creates a new Unordered Vec
@@ -101,193 +101,100 @@ impl<T> Set<T> where T: Copy+PartialOrd {
                 index: trivindex(self.ascending == asc,self.data.len()) },
             Indexed => *self, 
             Ranked => Self{ stype:SType::Indexed, ascending:asc, data:self.data,             
-                index: trivindex(self.ascending == asc,self.data.len()) }
+                index: if self.ascending == asc {self.index.invindex()} 
+                    else {self.index.invindex().revs()}}
         }    
     }
+
+    pub fn to_ranked(&self,asc:bool) -> Self {
+        match self.stype {
+            Empty => *self,
+            Unordered => Self{ stype:SType::Ranked, ascending:asc, data:self.data, 
+                index: if asc {self.data.sortidx().invindex()} 
+                    else {self.data.sortidx().revs().invindex()} },
+            Ordered => Self{ stype:SType::Ranked, ascending:asc, data:self.data, 
+                index: trivindex(self.ascending == asc,self.data.len()) },
+            Indexed => Self{ stype:SType::Ranked, ascending:asc, data:self.data,             
+                index: if self.ascending == asc {self.index.invindex()} 
+                    else {self.index.revs().invindex()}}, 
+            Ranked => *self
+        }    
+    }
+
+    /// Inserts an item of the same end-type to self
+    pub fn insert(&self, item:T) -> Self {
+        let mut scopy = self.clone();
+        scopy.minsert(item);
+        scopy 
+    }
+
+    /// Deletes an item of the same end-type from self
+    pub fn delete(&self, item:T) -> Self {
+        let mut scopy = self.clone();
+        if scopy.mdelete(item) { scopy } else { *self }
+    }    
+
+    /// Reverses a vec by iterating over only half of its length
+    /// and swapping the items
+    pub fn reverse(&self) -> Self { 
+        let mut scopy = self.clone();
+        scopy.mreverse();
+        scopy
+    }
  
-    /// Simply copies the slice and throws away its index
-    pub fn from_indexed(s: &IndexedSet<T>) -> Self {
-        Set{ v: s.v.to_vec() }
-    }
-    /// Simply copies the slice and throws away the ranks
-    pub fn from_ranked(s: &RankedSet<T>) -> Self {
-        Set{ v: s.v.to_vec() }
-    }  
-}
-
-/// Ordered Set, holding an explicitly sorted (ascending or descending) generic Vec<T>. 
-/// Often is the final result of some set operations.
-pub struct OrderedSet<T> {
-    /// Ascending order (true), descending (false)
-    pub ascending: bool,
-    /// Ordered data vector
-    pub v: Vec<T>,
-}
-/// Display trait implemented for struct OrderedSet.
-impl<T: std::fmt::Display> std::fmt::Display for OrderedSet<T> where T:Copy {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let n = self.v.len();
-        if n == 0 { return writeln!(f,"[]") }
-        let ascdesc = if self.ascending { String::from("Ascending") }
-            else { String::from("Descending") };  
-        writeln!(f, "{} Ordered Set:\n{}", ascdesc, self.v.gr())
-    }
-}
-
-impl<T> Deref for OrderedSet<T> {
-    type Target = Vec<T>; 
-    fn deref(&self) -> &Self::Target {
-        &self.v
-    }
-}
-impl<T> DerefMut for OrderedSet<T> { 
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.v
-    }
-}
-
-/// Implementation of Clone trait for struct OrderedSet.    
-impl<T> Clone for OrderedSet<T> where T:Clone {
-    fn clone(&self) -> Self {
-        OrderedSet{ ascending: self.ascending, v: self.v.to_vec() }
-    }
-}
-impl<T> OrderedSet<T>  where T: Copy {
-
-    /// Constructor from an ascending ordered slice
-    pub fn from_asc_slice(s: &[T]) -> Self where T:PartialOrd+Copy {        
-        OrderedSet{ ascending:true, v: s.to_vec() }
+    /// Deletes any repetitions
+    pub fn nonrepeat(&self) -> Self { 
+        let mut scopy =  self.clone();
+        scopy.mnonrepeat();
+        scopy
     }
 
-    /// Constructor from a descending ordered slice
-    pub fn from_desc_slice(s: &[T]) -> Self where T:PartialOrd+Copy {        
-        OrderedSet{ ascending:false, v: s.to_vec() }
+    /// Union of two sets  
+    pub fn union(&self, s: &Self) -> Self {
+        let mut scopy =  self.clone();
+        scopy.munion(s);
+        scopy
+    }
+    
+    /// Intersection of two sets
+    pub fn intersection(&self, s: &Self) -> Self {
+        let mut scopy = self.clone();
+        scopy.mintersection(s);
+        scopy
+    }
+    
+    /// Complement of s in self (i.e. self -= s)
+    pub fn difference(&self, s: &Self) -> Self {
+        let mut scopy = self.clone();
+        scopy.mdifference(s);
+        scopy
     }
 
-    /// Initialiser, explicitly sorts an unordered slice
-    pub fn from_slice(s: &[T], asc: bool) -> Self where T:PartialOrd+Copy {
-        OrderedSet{ ascending:asc, v: s.sortm(asc) }
-    }
-    /// Initialiser, explicitly sorts an unordered Set
-    pub fn from_set(s: &Set<T>, asc: bool) -> Self where T:PartialOrd+Copy {
-        OrderedSet{ ascending:asc, v: s.v.sortm(asc) }
-    }
-    /// Uses index to build explicitly ordered set
-    pub fn from_indexed(s: &IndexedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
-        OrderedSet{ ascending:asc, v: s.i.unindex(&s.v,asc == s.ascending) }
-    }
-    /// Uses ranks to build explicitly ordered set
-    pub fn from_ranked(s: &RankedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
-        OrderedSet{ ascending:asc, v: s.i.invindex().unindex(&s.v,asc == s.ascending) }
-    }
-}
+    /// Finds minimum, minimum's first index, maximum, maximum's first index  
+    pub fn infsup(&self) -> MinMax<T> {
+        match self.stype {
+            Empty => *self,
+            Unordered => Self{ stype:SType::Ranked, ascending:asc, data:self.data, 
+                index: if asc {self.data.sortidx().invindex()} 
+                    else {self.data.sortidx().revs().invindex()} },
+            Ordered => Self{ stype:SType::Ranked, ascending:asc, data:self.data, 
+                index: trivindex(self.ascending == asc,self.data.len()) },
+            Indexed => Self{ stype:SType::Ranked, ascending:asc, data:self.data,             
+                index: if self.ascending == asc {self.index.invindex()} 
+                    else {self.index.revs().invindex()}}, 
+            Ranked => *self
+        }      
+    } 
 
-/// Struct holding an (unordered)git set and its sort index. 
-/// Thus it is an index ordered set (ascending or descending).
-pub struct IndexedSet<T> {
-    /// Ascending order (true), descending (false)    
-    pub ascending: bool,
-    /// Unordered data vector
-    pub v: Vec<T>,
-    /// Index giving the data sort order
-    pub i: Vec<usize>,
-}
-/// Display implemented for struct IndexedSet.
-impl<'a,T: std::fmt::Display> std::fmt::Display for IndexedSet<T> where T:Copy {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let n = self.v.len();
-        if n == 0 { return writeln!(f,"[]") }
-        let s = if self.ascending { String::from("Ascending") }
-            else { String::from("Descending") };  
-        writeln!(f, "{} Indexed Set\nSet:   {}\nIndex: {}",
-            s, self.v.gr(), self.i.gr())
-    }
-}
-/// Implementation of Clone trait for struct IndexedSet.    
-impl<T> Clone for IndexedSet<T> where T:Clone {
-    fn clone(&self) -> Self {
-        IndexedSet{ ascending: self.ascending, v: self.v.to_vec(), i: self.i.to_vec() }
-    }
-}
+}   
 
-impl<'a,T> IndexedSet<T> where T:Copy {
-
-    /// Initialiser, indexsorts an unordered slice
-    pub fn from_slice(s: &'a[T], asc:bool) -> Self where T:PartialOrd+Copy {
-        if asc { IndexedSet{ ascending:true, v:s.to_vec(), i:s.sortidx() } }
-        else { IndexedSet{ ascending:false, v:s.to_vec(), i:s.sortidx().revindex() } }
-    }
-    /// Initialiser, indexsorts an unordered Set
-    pub fn from_set(s: &'a Set<T>, asc: bool) -> Self where T:PartialOrd+Copy {
-        if asc { IndexedSet{ ascending:true, v:s.v.to_vec(), i:s.sortidx() } }
-        else { IndexedSet{ ascending:false, v:s.v.to_vec(), i:s.v.sortidx().revindex() } }     
-    }
-    /// From Oredered, the sort index will be trivial 
-    pub fn from_ordered(s: &'a OrderedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {        
-        IndexedSet{ ascending:asc, v:s.v.to_vec(), i:trivindex(asc == s.ascending,s.len()) } 
-    }
-    /// Converts ranks to sort index
-    pub fn from_ranked(s: &'a RankedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
-        if asc == s.ascending { IndexedSet{ ascending: asc, v: s.v.to_vec(), i:s.i.invindex() } }
-        else  { IndexedSet{ ascending: asc, v: s.v.to_vec(), i:s.i.complindex().invindex() } }     
-    }
-}
-
-/// Struct holding an unordered set 
-/// and a vector of its ranks (ascending or descending).
-pub struct RankedSet<T> {
-    /// Ascending order (true), descending (false)
-    pub ascending: bool,
-    /// Unordered data vector
-    pub v: Vec<T>,
-    /// Index giving the data ranks
-    pub i: Vec<usize>,
-}
-/// Display implemented for struct RankedSet.
-impl<'a,T: std::fmt::Display> std::fmt::Display for RankedSet<T> where T:Copy {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let n = self.v.len();
-        if n == 0 { return writeln!(f,"[]") }
-        let s = if self.ascending { String::from("Ascending") }
-            else { String::from("Descending") };  
-        writeln!(f, "{} Ranked Set\nSet:   {}\nRanks: {}", s, self.v.gr(),self.i.gr())
-    }
-}
-/// Implementation of Clone trait for struct RankedSet.    
-impl<T> Clone for RankedSet<T> where T:Clone {
-    fn clone(&self) -> Self {
-        RankedSet{ ascending: self.ascending, v: self.v.to_vec(), i: self.i.to_vec() }
-    }
-}
-
-/// Associated functions for conversions, returning RankedSet
-impl<T> RankedSet<T> where T:Copy {
-
-    /// Initialiser, ranks an unordered slice
-    pub fn from_slice(s: &[T], asc:bool) -> Self where T:PartialOrd+Copy {
-        RankedSet{ ascending:asc, v:s.to_vec(), i:s.rank(asc) }
-    }
-    /// Initialiser, ranks an unordered Set
-    pub fn from_set(s: &Set<T>, asc: bool) -> Self where T:PartialOrd+Copy {
-        RankedSet{ ascending:asc, v:s.v.to_vec(), i:s.rank(asc) } 
-    }        
-    /// From Ordered - the index will be trivial 
-    pub fn from_ordered(s: &OrderedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {       
-        RankedSet{ ascending:asc, v:s.v.to_vec(), i:trivindex(asc == s.ascending,s.len()) } 
-    }
-    /// Converts sort index to ranks
-    pub fn from_indexed(s: &IndexedSet<T>, asc: bool) -> Self where T:PartialOrd+Copy {
-        if asc == s.ascending { RankedSet{ ascending: asc, v: s.v.to_vec(), i:s.i.invindex() } }
-        else { RankedSet{ ascending: asc, v: s.v.to_vec(), i:s.i.invindex().complindex() } }     
-    }
-}
 
 /// Required methods for all four of the set structs.
 pub trait SetOps<T>  where Self: MutSetOps<T> + Sized {
     /// reverses the vector of explicit sets and index of indexed sets
     fn reverse(&self) -> Self;
     /// Deletes any repetitions
-    fn nonrepeat(&self) -> Self;git merge
+    fn nonrepeat(&self) -> Self;
     /// fn nonrepeat(&self) -> Self;  
     /// Finds minimum, minimum's first index, maximum, maximum's first index  
     fn infsup(&self) -> MinMax<T>; 
