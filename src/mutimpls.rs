@@ -1,25 +1,37 @@
-use crate::{trivindex,Set,MutSetOps};
-use indxvec::{Indices,Vecops};
+#![warn(missing_docs)]
+use crate::{trivindex,SType,Set,MutSetOps};
+use indxvec::{Indices,Vecops,Mutsort};
 
-impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd {
+/// Removes repetitions from explicitly ordered data.
+/// Ascending or descending.
+pub fn msansrepeat<T>(s:&mut Vec<T>) where T: PartialEq+Copy {
+    if s.len() < 2 { return };
+    let mut last:T = s[0];
+    for i in 1..s.len() {
+        if s[i] != last { last = s[i]; }
+        else { s.remove(i); } 
+    }
+}
+
+impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd+Default {
 
     /// Deletes an item v of the same end-type from self
     /// Returns false if item not found 
     fn mdelete(&mut self, item:T) -> bool where Self:Sized {
         match self.stype {
-            Empty => Default::default(), // empty set
-            Unordered => {
+            SType::Empty => Default::default(), // empty set
+            SType::Unordered => {
                 if let Some(i) = self.search(item) {
                     // don't care about order, swap_remove swaps in the last item, fast
                     self.data.swap_remove(i); true }
                     else { false }
             }, 
-            Ordered => {
+            SType::Ordered => {
                 if let Some(i) = self.search(item) {
                     self.data.remove(i); true } // preserve ordering
                     else { false }  
             },
-            Indexed => {
+            SType::Indexed => {
                 let mut rankindex = self.index.invindex();
                 if let Some(ix) = if self.ascending { 
                     self.data.memsearch_indexed(&self.index,item) }
@@ -43,7 +55,7 @@ impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd {
                 } 
                 else { false }
             },
-            Ranked => {
+            SType::Ranked => {
                 let sortindex = self.index.invindex();
                 if let Some(ix) = if self.ascending { 
                     self.data.memsearch_indexed(&sortindex,item) }
@@ -73,56 +85,110 @@ impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd {
     /// Inserts an item v of the same end-type to self
     fn minsert(&mut self, item:T) {
         match self.stype {
-            Empty => Default::default(), // empty set
-            Unordered => s.to_unordered(), 
-            Ordered => s.to_ordered(self.ascending),
-            Indexed => s.to_indexed(self.ascending),
-            Ranked => s.to_ranked(self.ascending)
-        }
+            Empty => {  // initially empty set
+                self.stype = crate::SType::Ordered;
+                self.data.push(item);
+            },
+            Unordered => self.data.push(item), 
+            Ordered => {
+                // binsearch finds the right sort position
+                let i = if self.ascending { self.data.binsearch(item) }
+                else { self.data.binsearchdesc(item) };
+                self.data.insert(i,item); // shifts the rest  
+            },
+            Indexed => {
+                let ix = if self.ascending { self.data.binsearch_indexed(&self.index,item) }
+                else { self.data.binsearchdesc_indexed(&self.index,item) };
+                // simply push the item to the end of unordered data self.data
+                self.data.push(item);
+                // and insert its subscipt into the right place ix in the sort index    
+                self.index.insert(ix,self.data.len()-1);                
 
-        // unordered set, so just pushing v to the end
-        self.push(item)  
+            }
+            Ranked => {
+               // have to invert the rank index to get the required sort index
+                let ix = if self.ascending { self.data.binsearch_indexed(&self.index.invindex(),item) }
+                else { self.data.binsearchdesc_indexed(&self.index.invindex(),item) };
+                // simply push the new item to the end of unordered data self.data
+                self.data.push(item);
+               // and insert its subscipt into the same place in the rank index    
+                self.index.push(ix);
+            }
+        };
     }
 
     /// Reverses a vec by iterating over only half of its length
     /// and swapping the items
     fn mreverse(&mut self) { 
-        let n = self.data.len();
-        for i in 0..n/2 { self.swap(i,n-i-1) }
+        match self.stype {
+            Empty => Default::default(), // empty set
+            Unordered => self.data.mutrevs(), 
+            Ordered => {        
+                self.ascending = !self.ascending;
+                self.data.mutrevs(); 
+            },
+            Indexed => {
+                self.ascending = !self.ascending;
+                self.index.mutrevs(); 
+            },
+            Ranked => {
+                self.ascending = !self.ascending;
+                self.index.complindex();                
+            }
+        }
     }
 
     /// Deletes any repetitions
-    fn mnonrepeat(&mut self) { self.data = self.data.sansrepeat() }
+    fn mnonrepeat(&mut self) {
+        match self.stype {
+            Empty => Default::default(), // empty set
+            Unordered => { // sorts data first
+                self.data = self.data.sortm(true);
+                msansrepeat(&mut self.data); 
+            }, 
+            Ordered =>  msansrepeat(&mut self.data),
+            Indexed => { // spoofed by sorted data and trivial index
+                let mut orddata = self.index.unindex(&self.data,self.ascending);
+                msansrepeat(&mut orddata);
+                self.data = orddata; // resets data to ordered
+                self.index = trivindex(self.ascending, self.data.len());
+            },
+            Ranked => { // spoofed by sorted data and trivial index
+                let mut orddata = self.index.invindex().unindex(&self.data,self.ascending);
+                msansrepeat(&mut orddata);
+                self.data = orddata; // resets data to ordered
+                self.index = trivindex(self.ascending, self.data.len());       
+            }
+        }
+    }
 
-    /// Union of two unordered sets, concat assigned to self  
+    /// sets union
     fn munion(&mut self, s: &Self) {
-        self.data = self.unite_unsorted(s); 
+        let mut selford = self.to_ordered(true);
+        let sord = s.to_ordered(true);
+        selford.data = selford.data.merge(&sord.data);
+        *self = self.to_self(&selford); // back to original type and order 
     }
 
     /// Intersection of two unordered sets, assigned to self
     fn mintersection(&mut self, s: &Self) {
-        let s1 = self.sortm(true);
-        let s2 = s.sortm(true);
-        self.data = s1.intersect(&s2); 
+        let mut selford = self.to_ordered(true);
+        let sord = s.to_ordered(true);
+        selford.data = selford.data.intersect(&sord.data);
+        *self = self.to_self(&selford); // back to original type and order 
     }
 
     /// Complement of s in self (i.e. self -= s)
     fn mdifference(&mut self, s: &Self) {
-        let s1 = self.sortm(true);
-        let s2 = s.sortm(true); 
-        self.data = s1.diff(&s2);  
+        let mut selford = self.to_ordered(true);
+        let sord = s.to_ordered(true);
+        selford.data = selford.data.diff(&sord.data);
+        *self = self.to_self(&selford); // back to original type and order
     }    
 }
 
+/*
 impl<T> MutSetOps<T> for OrderedSet<T> where T:Copy+PartialOrd {
-
-    /// Inserts an item v of the same end-type to self
-    fn minsert(&mut self, item:T) {
-        // binsearch finds the right sort position
-        let i = if self.ascending { self.binsearch(item) }
-        else { self.binsearchdesc(item) };
-        self.data.indexnsert(i,item); 
-    }
 
     /// Reverses a vec by iterating over only half of its length
     /// and swapping the items
@@ -148,8 +214,8 @@ impl<T> MutSetOps<T> for OrderedSet<T> where T:Copy+PartialOrd {
     fn mintersection(&mut self, s: &Self) {
         // the result will be always ascending
         if !self.ascending { self.ascending = true; self.data = self.data.revs() }; 
-        if s.ascending { self.data = self.data.indexntersect(&s.data )}
-        else { self.data = self.data.indexntersect(&s.data.revs()) };  
+        if s.ascending { self.data = self.data.intersect(&s.data )}
+        else { self.data = self.data.intersect(&s.data.revs()) };  
     }
 
     /// Ascending complement of s in self (i.e. self-s)
@@ -164,28 +230,8 @@ impl<T> MutSetOps<T> for OrderedSet<T> where T:Copy+PartialOrd {
 /// These are generally better than OrderedSet(s) for bulky end types, as
 /// there is no moving of data around.
 impl<T> MutSetOps<T> for IndexedSet<T> where T: Copy+PartialOrd {
-
-    /// Inserts an item v of the same end-type to self
-    fn minsert(&mut self, item:T) {
-        let ix = if self.ascending { self.data.binsearch_indexed(&self.index,item) }
-        else { self.data.binsearchdesc_indexed(&self.index,item) };
-        // simply push the item to the end of unordered data self.data
-        self.data.push(item);
-        // and insert its subscipt into the right place ix in the sort index    
-        self.index.indexnsert(ix,self.data.len()-1);
-    }
-
-    /// just reverse the index
-    fn mreverse(&mut self) {
-        self.ascending = !self.ascending;
-        self.index = self.index.revindex(); 
-        }
     
-    /// deletes repetitions.
-    fn mnonrepeat(&mut self) { 
-        self.data = self.data.sansrepeat();
-        self.index = self.data.sortidx();       
-    } 
+
 
     /// Union of two IndexedSets reassigned to self.  
     /// Will be always ascending ordered.  
@@ -239,21 +285,9 @@ impl<T> MutSetOps<T> for IndexedSet<T> where T: Copy+PartialOrd {
 /// and only to rank the final result.
 impl<T> MutSetOps<T> for RankedSet<T> where T: Copy+PartialOrd {
 
-    /// Deletes an item v of the same end-type from self
-    /// Returns false if the item is not found 
-    fn mdelete(&mut self, item:T) -> bool {
-
-    }  
-
     /// Inserts an item v of the same end-type to self
     fn minsert(&mut self, item:T) {
-        // have to invert the rank index to get the required sort index
-        let ix = if self.ascending { self.data.binsearch_indexed(&self.index.indexnvindex(),item) }
-        else { self.data.binsearchdesc_indexed(&self.index.indexnvindex(),item) };
-        // simply push the new item to the end of unordered data self.data
-        self.data.push(item);
-        // and insert its subscipt into the same place in the rank index    
-        self.index.push(ix);
+
     }
     
     /// just make the ranks descending
@@ -313,3 +347,4 @@ impl<T> MutSetOps<T> for RankedSet<T> where T: Copy+PartialOrd {
         self.index = trivindex(true,self.data.len()); 
     }
 }
+*/
