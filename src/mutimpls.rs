@@ -5,16 +5,81 @@ impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd {
 
     /// Deletes an item v of the same end-type from self
     /// Returns false if item not found 
-    fn mdelete(&mut self, item:T) -> bool
-        where Self:Sized,T:Copy+PartialOrd {
-        if let Some(i) = self.search(item) {
-        // don't care about order, swap_remove swaps in the last item, fast
-        self.data.swap_remove(i); true }
-        else { false }
+    fn mdelete(&mut self, item:T) -> bool where Self:Sized {
+        match self.stype {
+            Empty => Default::default(), // empty set
+            Unordered => {
+                if let Some(i) = self.search(item) {
+                    // don't care about order, swap_remove swaps in the last item, fast
+                    self.data.swap_remove(i); true }
+                    else { false }
+            }, 
+            Ordered => {
+                if let Some(i) = self.search(item) {
+                    self.data.remove(i); true } // preserve ordering
+                    else { false }  
+            },
+            Indexed => {
+                let mut rankindex = self.index.invindex();
+                if let Some(ix) = if self.ascending { 
+                    self.data.memsearch_indexed(&self.index,item) }
+                else { self.data.memsearchdesc_indexed(&self.index,item) } 
+                {        
+                    self.data.remove(self.index[ix]); 
+                    rankindex.remove(self.index[ix]);
+                    // repare the whole rank index
+                    if self.ascending {
+                        for (j,&val) in self.data.iter().enumerate() { 
+                            if val > item { rankindex[j] -= 1 };
+                        } 
+                    }
+                    else {
+                        for (j,&val) in self.data.iter().enumerate() { 
+                            if val < item { rankindex[j] -= 1 };                
+                        }
+                    }
+                    self.index = rankindex.invindex();
+                    true 
+                } 
+                else { false }
+            },
+            Ranked => {
+                let sortindex = self.index.invindex();
+                if let Some(ix) = if self.ascending { 
+                    self.data.memsearch_indexed(&sortindex,item) }
+                else { self.data.memsearchdesc_indexed(&sortindex,item) } 
+                {   // memsearch(desc) suceeded, finding subscript ix of item    
+                    self.data.remove(sortindex[ix]); 
+                    // rank index is also in data order
+                    self.index.remove(sortindex[ix]); 
+                    // repare the whole rank index
+                    if self.ascending {
+                        for (j,&val) in self.data.iter().enumerate() { 
+                            if val > item { self.index[j] -= 1 };
+                        } 
+                    }
+                    else {
+                        for (j,&val) in self.data.iter().enumerate() { 
+                            if val < item { self.index[j] -= 1 };                
+                        }
+                    }
+                    true 
+                } 
+                else { false } // memsearch(desc) failed
+            } 
+        }
     }  
 
     /// Inserts an item v of the same end-type to self
     fn minsert(&mut self, item:T) {
+        match self.stype {
+            Empty => Default::default(), // empty set
+            Unordered => s.to_unordered(), 
+            Ordered => s.to_ordered(self.ascending),
+            Indexed => s.to_indexed(self.ascending),
+            Ranked => s.to_ranked(self.ascending)
+        }
+
         // unordered set, so just pushing v to the end
         self.push(item)  
     }
@@ -50,14 +115,6 @@ impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd {
 }
 
 impl<T> MutSetOps<T> for OrderedSet<T> where T:Copy+PartialOrd {
-
-    /// Deletes an item v of the same end-type from self
-    /// Returns false if item not found 
-    fn mdelete(&mut self, item:T) -> bool {
-        if let Some(i) = self.search(item) {
-        self.data.remove(i); true } // preserve ordering
-        else { false }
-    }  
 
     /// Inserts an item v of the same end-type to self
     fn minsert(&mut self, item:T) {
@@ -107,33 +164,6 @@ impl<T> MutSetOps<T> for OrderedSet<T> where T:Copy+PartialOrd {
 /// These are generally better than OrderedSet(s) for bulky end types, as
 /// there is no moving of data around.
 impl<T> MutSetOps<T> for IndexedSet<T> where T: Copy+PartialOrd {
-
-    /// Deletes an item v of the same end-type from self
-    /// Returns false if the item is not found 
-    fn mdelete(&mut self, item:T) -> bool {
-        let mut rankindex = self.index.indexnvindex();
-        if let Some(ix) = if self.ascending { 
-            self.data.memsearch_indexed(&self.index,item) }
-        else { self.data.memsearchdesc_indexed(&self.index,item) } 
-        {        
-            self.data.remove(self.index[ix]); 
-            rankindex.remove(self.index[ix]);
-            // repare the whole rank index
-            if self.ascending {
-                for (j,&val) in self.data.indexter().enumerate() { 
-                    if val > item { rankindex[j] -= 1 };
-                } 
-            }
-            else {
-                for (j,&val) in self.data.indexter().enumerate() { 
-                    if val < item { rankindex[j] -= 1 };                
-                }
-            }
-            self.index = rankindex.indexnvindex();
-            true 
-        } 
-        else { false }
-    }
 
     /// Inserts an item v of the same end-type to self
     fn minsert(&mut self, item:T) {
@@ -212,27 +242,7 @@ impl<T> MutSetOps<T> for RankedSet<T> where T: Copy+PartialOrd {
     /// Deletes an item v of the same end-type from self
     /// Returns false if the item is not found 
     fn mdelete(&mut self, item:T) -> bool {
-        let sortindex = self.index.indexnvindex();
-        if let Some(ix) = if self.ascending { 
-            self.data.memsearch_indexed(&sortindex,item) }
-        else { self.data.memsearchdesc_indexed(&sortindex,item) } 
-        {        
-            self.data.remove(sortindex[ix]); 
-            self.index.remove(sortindex[ix]);
-            // repare the whole rank index
-            if self.ascending {
-                for (j,&val) in self.data.indexter().enumerate() { 
-                    if val > item { self.index[j] -= 1 };
-                } 
-            }
-            else {
-                for (j,&val) in self.data.indexter().enumerate() { 
-                    if val < item { self.index[j] -= 1 };                
-                }
-            }
-            true 
-        } 
-        else { false }
+
     }  
 
     /// Inserts an item v of the same end-type to self

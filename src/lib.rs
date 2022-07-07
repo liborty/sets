@@ -42,7 +42,7 @@ pub struct Set<T> {
 
 // static EMPTYSET:Set<f64> = Set{ stype:SType::Empty, ascending:true, data:vec![], index:vec![]};
 
-/// Default values for Set<T>
+/// Default values for empty Set<T>
 /// Note that the data and index Vecs are empty 
 /// but still of the end types T and <usize> respectively
 impl<T> Default for Set<T> {
@@ -87,7 +87,7 @@ impl<T> Set<T> where T: Copy+PartialOrd {
 
     /// Converter - to unordered Set
     /// Caution: this just throws away the valuable index!
-    pub fn to_unordered(&self,s: &[T]) -> Self { 
+    pub fn to_unordered(&self) -> Self { 
         match self.stype {
             Empty => *self, // empty set is unique
             Unordered => *self, // no op
@@ -139,6 +139,18 @@ impl<T> Set<T> where T: Copy+PartialOrd {
             Ranked => *self
         }    
     }
+
+    /// General converter: s -> Set of the same type and order as self
+    pub fn to_self(&self,s: &Self) -> Self { 
+        // if self.stype = s.stype { return *s }; // nothing to do
+        match self.stype {
+            Empty => Default::default(), // empty set
+            Unordered => s.to_unordered(), 
+            Ordered => s.to_ordered(self.ascending),
+            Indexed => s.to_indexed(self.ascending),
+            Ranked => s.to_ranked(self.ascending)
+        }
+    }       
 
     /// Inserts an item of the same end-type to self
     pub fn insert(&self, item:T) -> Self {
