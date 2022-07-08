@@ -62,7 +62,12 @@ pub enum SType {
 
 ### Associated Initialisers
 
-`new_empty
+```rust
+    /// all in one Initialiser creates a new Set
+    /// of self_type SType, from slice d, in asc order 
+    pub fn new(self_type: SType, d: &[T], asc:bool) -> Self { ... }
+```
+
 `unordered_from_slice()` wraps raw data slice &[T] in Set of Unordered type.
 
 `to_unordered, to_ordered, to_indexed, to_ranked` implement conversions to all types of Sets from all types.

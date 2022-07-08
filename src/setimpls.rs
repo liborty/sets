@@ -7,7 +7,8 @@ impl<T> Set<T> where T: Copy+PartialOrd+Default {
     /// Associated constant EMPTYSET, unique for each concrete end-type T
     pub const EMPTYSET:Set<T> = Set{ stype:SType::Empty, ascending:true, data:Vec::new(), index:Vec::new() };
 
-    /// all in one Initialiser - creates a new Set of SType in asc order, from data 
+    /// all in one Initialiser creates a new Set
+    /// of self_type, from slice d, in asc order 
     pub fn new(self_type: SType, d: &[T], asc:bool) -> Self {  
         if d.is_empty() { return Set::EMPTYSET }; // no data
         match self_type {
