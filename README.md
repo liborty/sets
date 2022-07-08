@@ -7,9 +7,9 @@
 
 ## Description
 
-This crate defines `Struct: Set`, encompassing five kinds of sets: Empty, Unordered, Ordered, Indexed, Ranked, and common methods acting on them. This `Struct` is a type-safe wrapper for the more primitive imported functions and methods from crate `indxvec`.
+This crate defines `Struct: Set`, wrapping up five kinds of sets: Empty, Unordered, Ordered, Indexed and Ranked, and common methods acting upon them. It adds organisation and type safety to some primitive methods imported from crate `indxvec`.
 
-The main capabilities of `Sets` include the usual set operations, plus efficient sorting, ranking, searching, etc. The aim is to avoid moving data as much as possible. This is done by manipulating indices instead. These methods work on generic vectors (or slices) of primitive end types `<T>`. They will also work on any arbitrarily complex user end type, as long as the required traits `PartialOrd` and `Copy`, are implemented for it by the user.
+The main capabilities of `Sets` include the usual set operations, plus efficient sorting, ranking, searching, etc. The aim is to avoid moving data as much as possible. This is done by manipulating indices instead. These methods work on any generic vectors (or slices) of primitive end types `<T>`. Also, on any arbitrarily complex user end type, as long as the required traits `PartialOrd` and `Copy`, are implemented for it by the user.
 
 ## Usage
 
@@ -20,8 +20,49 @@ The following 'use' declaration in source files makes available everything:
 use sets::{Set,MutSetOps};
 ```
 
-## Initialisers and Converters
+## `Set<T>`
 
+```rust
+/// The struct type for sets
+#[derive(Default)]
+pub struct Set<T> {
+    /// type of the set
+    pub stype: SType,
+    /// order: ascending (true), descending (false)
+    pub ascending: bool,
+    /// data Vec
+    pub data: Vec<T>,
+    /// index Vec
+    pub index: Vec<usize>
+}
+```
+
+`Clone` and `Display` traits are implemented for `Set` and `SType`.  
+`Default` is derived, thus `Default::default()` generates a copy of an empty set.
+
+`SType` specifies one of the five kinds of sets. It is dealt with by 'enumeration generics'.
+
+```rust
+/// The five types of sets
+#[derive(Default,Clone,Copy)]
+pub enum SType {
+    /// empty set
+    #[default]
+    Empty,
+    /// unordered set
+    Unordered,
+    /// ordered set
+    Ordered,
+    /// indexed set
+    Indexed,
+    /// ranked set
+    Ranked
+}
+```
+
+### Associated Initialisers
+
+`new_empty
 `unordered_from_slice()` wraps raw data slice &[T] in Set of Unordered type.
 
 `to_unordered, to_ordered, to_indexed, to_ranked` implement conversions to all types of Sets from all types.
@@ -79,7 +120,7 @@ pub trait MutSetOps<T> {
 
 ## Release Notes (Latest First)
 
-**Version 1.1.0** - Joined all four types of sets into one Struct Set. Simplified code using enum generics. 
+**Version 1.1.0** - Joined all four types of sets into one Struct Set. Simplified and generalised code by using enum generics.
 
 **Version 1.0.6** - Added mutable methods `minsert` and `mdelete` to `MutSetOps`, that insert or remove one specific item to/from any of the sets. Added tests of them to `tests/tests.rs`. Updated `indxvec` dependency to its version `1.2.4` or greater.
 

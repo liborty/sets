@@ -61,7 +61,7 @@ impl<T: std::fmt::Display> std::fmt::Display for Set<T> where T:Copy {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match &self.stype {
             SType::Empty =>  writeln!(f,"Empty Set"),
-            SType::Unordered => writeln!(f, "Unordered Set\n{}",self.data.gr()),
+            SType::Unordered => writeln!(f, "Unordered Set\nData: {}",self.data.gr()),
             SType::Ordered => writeln!(f, "Ordered {} Set\nData: {}",ascdesc(self.ascending),self.data.gr()),
             SType::Indexed => writeln!(f, "Indexed {} Set\nData: {}\nIndex: {}",ascdesc(self.ascending),self.data.gr(),self.index.yl()),
             SType::Ranked => writeln!(f, "Ranked {} Set\nData: {}\nRanks: {}",ascdesc(self.ascending),self.data.gr(),self.index.yl()),

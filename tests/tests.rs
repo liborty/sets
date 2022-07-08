@@ -11,11 +11,11 @@ fn conversions() {
    let v = vec![1.,14.,2.,13.,3.,12.,4.,11.,5.,10.,10.,6.,9.,7.,8.,16.];
    let setv = Set::new_unordered(&v);  
    println!("{}",setv); // Display of Set 
-   println!("{}",Set::to_ordered(&setv,true)); // descending sorted data, index lost  
-   println!("{}",Set::to_indexed(&setv,false));
-   let rset = Set::to_ranked(&setv,false);
+   println!("{}",setv.to_ordered(true)); // descending sorted data, index lost  
+   println!("{}",setv.to_indexed(false));
+   let rset = setv.to_ranked(false).to_ordered(false);
    println!("{}",rset); 
-   println!("{}",Set::to_self(&setv,&rset)); 
+   println!("{}",setv.to_same(&rset)); 
 }
 
 #[test]
@@ -24,7 +24,7 @@ fn settest() {
    println!("Data: {}\n",v.bl()); // Display of Set   
    let sv = Set::new_unordered(&v); 
    println!("Where is {}? at {}\n",12.bl(),sv.search(12.0).map_or_else(||"None".rd(),|x|x.gr()));  
-   let setv = Set::to_ranked(&sv,false);  
+   let setv = sv.to_ranked(false);  
    println!("{}",setv); // Display of Set
    println!("Reverse-> {}",setv.reverse()); 
    println!("Nonrepeat-> {}",setv.nonrepeat()); // Display of Set    
@@ -46,14 +46,14 @@ fn mutabletest() {
     println!("{}",setu);
     setu.minsert(10.5);
     println!("Inserted 10.5 to {}",setu); // Display of Set 
-    let mut setr = Set::to_ranked(&setu,false);  
+    let mut setr = setu.to_ranked(false);  
     println!("{}",setr); // Display of RankedSet
     let setr2 = Set::new_unordered(&[20.,19.,18.,17.,16.,15.]);
     println!("New {}",setr2); // Display of ascending ranked set
     setr.munion(&setr2); 
     setr.mreverse();
     println!("Union->  {}",&setr);
-    println!("{}",Set::to_ranked(&setr,false));        
+    println!("{}",setr.to_ranked(false));        
     setr.mdelete(10.5);
     println!("Deleted 10.5 from {}",&setr); 
     println!("{}",Set::to_ordered(&setr,true));
