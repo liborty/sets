@@ -48,6 +48,8 @@ fn mutabletest() {
     println!("Inserted 10.5 to {}",setu); // Display of Set 
     let mut setr = setu.to_ranked(false);  
     println!("{}",setr); // Display of RankedSet
+    setr.mnonrepeat();
+    println!("Mnonrepeat {}",setr); //    
     let setr2 = Set::new_unordered(&[20.,19.,18.,17.,16.,15.]);
     println!("New {}",setr2); // Display of ascending ranked set
     setr.munion(&setr2); 

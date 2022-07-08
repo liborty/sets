@@ -2,19 +2,6 @@
 use crate::{trivindex,SType,Set,MutSetOps};
 use indxvec::{Indices,Vecops,Mutsort};
 
-/// Removes repetitions from explicitly ordered data.
-/// Ascending or descending.
-pub fn msansrepeat<T>(s:&mut Vec<T>) where T: PartialEq+Copy {
-    if s.len() < 2 { return };
-    let mut last:T = s[0];
-    let mut length = s.len();
-    let mut i = 1;
-    while i < length { 
-        if s[i] != last { last = s[i]; i+=1; }
-        else { s.remove(i); length -= 1; } 
-    }
-}
-
 impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd+Default {
 
     /// Deletes an item v of the same end-type from self
@@ -146,18 +133,18 @@ impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd+Default {
             SType::Empty => Default::default(), // empty set
             SType::Unordered => { // sorts data first
                 self.data = self.data.sortm(true);
-                msansrepeat(&mut self.data); 
+                self.data.dedup(); 
             }, 
-            SType::Ordered =>  msansrepeat(&mut self.data),
+            SType::Ordered =>  self.data.dedup(),
             SType::Indexed => { // spoofed by sorted data and trivial index
                 let mut orddata = self.index.unindex(&self.data,self.ascending);
-                msansrepeat(&mut orddata);
+                orddata.dedup();
                 self.data = orddata; // resets data to ordered
                 self.index = trivindex(self.ascending, self.data.len());
             },
             SType::Ranked => { // spoofed by sorted data and trivial index
                 let mut orddata = self.index.invindex().unindex(&self.data,self.ascending);
-                msansrepeat(&mut orddata);
+                orddata.dedup();
                 self.data = orddata; // resets data to ordered
                 self.index = trivindex(self.ascending, self.data.len());       
             }
