@@ -8,24 +8,24 @@ impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd+Default {
     /// Returns false if item not found 
     fn mdelete(&mut self, item:T) -> bool where Self:Sized {
         match self.stype {
-            SType::Empty => Default::default(), // empty set
+            SType::Empty => false, // empty set
             SType::Unordered => {
                 if let Some(i) = self.search(item) {
                     // don't care about order, swap_remove swaps in the last item, fast
                     self.data.swap_remove(i); true }
-                    else { false }
+                else { false }
             }, 
             SType::Ordered => {
                 if let Some(i) = self.search(item) {
                     self.data.remove(i); true } // preserve ordering
-                    else { false }  
+                else { false }  
             },
             SType::Indexed => {
                 let mut rankindex = self.index.invindex();
                 if let Some(ix) = if self.ascending { 
                     self.data.memsearch_indexed(&self.index,item) }
                 else { self.data.memsearchdesc_indexed(&self.index,item) } 
-                {        
+                {  // if let success      
                     self.data.remove(self.index[ix]); 
                     rankindex.remove(self.index[ix]);
                     // repare the whole rank index
@@ -42,7 +42,7 @@ impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd+Default {
                     self.index = rankindex.invindex();
                     true 
                 } 
-                else { false }
+                else { false } // if let failure
             },
             SType::Ranked => {
                 let sortindex = self.index.invindex();
