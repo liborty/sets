@@ -59,10 +59,10 @@ impl<T> Set<T> where T: Copy+PartialOrd+Default {
             SType::Unordered => Self{ stype:SType::Ordered, ascending:asc, data:self.data.sortm(asc), index:vec![] },
             SType::Ordered => self.clone(), // no op
             SType::Indexed => Self{ stype:SType::Ordered, ascending:asc, 
-                data:self.index.unindex(&self.data, asc == self.ascending),
+                data:self.index.unindex(&self.data, asc),
                 index:vec![] },
             SType::Ranked => Self{ stype:SType::Ordered, ascending:asc, 
-                data:self.index.invindex().unindex(&self.data, asc == self.ascending),
+                data:self.index.invindex().unindex(&self.data, asc),
                 index:vec![] },
         }    
     }
@@ -164,19 +164,19 @@ impl<T> Set<T> where T: Copy+PartialOrd+Default {
         match self.stype {
             SType::Empty => Default::default(),
             SType::Unordered => self.data.minmax(),  
-            SType::Ordered => {
+            Ordered => {
                 let last = self.data.len()-1;
                 if self.ascending { MinMax{min:self.data[0],minindex:0,max:self.data[last],maxindex:last} }
                 else { MinMax{min:self.data[last],minindex:last,max:self.data[0],maxindex:0} } 
             },
-            SType::Indexed => {
+            Indexed => {
                 let last = self.data.len()-1;
                 let firstval = self.data[self.index[0]];
                 let lastval = self.data[self.index[last]];
                 if self.ascending { MinMax{min:firstval,minindex:self.index[0],max:lastval,maxindex:self.index[last]} }
                 else { MinMax{min:lastval,minindex:self.index[last],max:firstval,maxindex:self.index[0]} }
             }, 
-            SType::Ranked => {
+            Ranked => {
                 let last = self.data.len()-1;
                 let si = self.index.invindex(); // ranks -> sort index
                 let firstval = self.data[si[0]];
@@ -193,11 +193,11 @@ impl<T> Set<T> where T: Copy+PartialOrd+Default {
         match self.stype {
             SType::Empty => None,
             SType::Unordered => self.data.member(m), // from indxvec ,
-            SType::Ordered => if self.ascending { self.data.memsearch(m)}
+            Ordered => if self.ascending { self.data.memsearch(m)}
                 else {self.data.memsearchdesc(m)},     
-            SType::Indexed => if self.ascending { self.data.memsearch_indexed(&self.index,m) }
+            Indexed => if self.ascending { self.data.memsearch_indexed(&self.index,m) }
                 else { self.data.memsearchdesc_indexed(&self.index,m) },
-            SType::Ranked => if self.ascending { self.data.memsearch_indexed(&self.index.invindex(),m) }
+            Ranked => if self.ascending { self.data.memsearch_indexed(&self.index.invindex(),m) }
                 else { self.data.memsearchdesc_indexed(&self.index.invindex(),m) }, 
             }       
     }       
@@ -214,11 +214,11 @@ impl<T> Set<T> where T: Copy+PartialOrd+Default {
         match self.stype {
             SType::Empty => 0_usize,
             SType::Unordered => self.data.len(),
-            SType::Ordered => if self.ascending { self.data.binsearch(m)}
+            Ordered => if self.ascending { self.data.binsearch(m)}
                 else {self.data.binsearchdesc(m)},     
-            SType::Indexed => if self.ascending { self.data.binsearch_indexed(&self.index,m) }
+            Indexed => if self.ascending { self.data.binsearch_indexed(&self.index,m) }
                 else { self.data.binsearchdesc_indexed(&self.index,m) },
-            SType::Ranked => if self.ascending { self.data.binsearch_indexed(&self.index.invindex(),m) }
+            Ranked => if self.ascending { self.data.binsearch_indexed(&self.index.invindex(),m) }
             else { self.data.binsearchdesc_indexed(&self.index.invindex(),m) },   
         }
     }   

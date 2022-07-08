@@ -7,11 +7,9 @@ use indxvec::{Indices,Vecops,Mutsort};
 pub fn msansrepeat<T>(s:&mut Vec<T>) where T: PartialEq+Copy {
     if s.len() < 2 { return };
     let mut last:T = s[0];
-    let mut length = s.len();
-    let mut i = 1;
-    while i < length { 
-        if s[i] != last { last = s[i]; i+=1; }
-        else { s.remove(i); length -= 1; } 
+    for i in 1..s.len() {
+        if s[i] != last { last = s[i]; }
+        else { s.remove(i); } 
     }
 }
 
@@ -87,18 +85,18 @@ impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd+Default {
     /// Inserts an item v of the same end-type to self
     fn minsert(&mut self, item:T) {
         match self.stype {
-            SType::Empty => {  // initially empty set
+            Empty => {  // initially empty set
                 self.stype = crate::SType::Ordered;
                 self.data.push(item);
             },
-            SType::Unordered => self.data.push(item), 
-            SType::Ordered => {
+            Unordered => self.data.push(item), 
+            Ordered => {
                 // binsearch finds the right sort position
                 let i = if self.ascending { self.data.binsearch(item) }
                 else { self.data.binsearchdesc(item) };
                 self.data.insert(i,item); // shifts the rest  
             },
-            SType::Indexed => {
+            Indexed => {
                 let ix = if self.ascending { self.data.binsearch_indexed(&self.index,item) }
                 else { self.data.binsearchdesc_indexed(&self.index,item) };
                 // simply push the item to the end of unordered data self.data
@@ -107,7 +105,7 @@ impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd+Default {
                 self.index.insert(ix,self.data.len()-1);                
 
             }
-            SType::Ranked => {
+            Ranked => {
                // have to invert the rank index to get the required sort index
                 let ix = if self.ascending { self.data.binsearch_indexed(&self.index.invindex(),item) }
                 else { self.data.binsearchdesc_indexed(&self.index.invindex(),item) };
@@ -123,19 +121,19 @@ impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd+Default {
     /// and swapping the items
     fn mreverse(&mut self) { 
         match self.stype {
-            SType::Empty => Default::default(), // empty set
-            SType::Unordered => self.data.mutrevs(), 
-            SType::Ordered => {        
+            Empty => Default::default(), // empty set
+            Unordered => self.data.mutrevs(), 
+            Ordered => {        
                 self.ascending = !self.ascending;
                 self.data.mutrevs(); 
             },
-            SType::Indexed => {
+            Indexed => {
                 self.ascending = !self.ascending;
                 self.index.mutrevs(); 
             },
-            SType::Ranked => {
+            Ranked => {
                 self.ascending = !self.ascending;
-                self.index = self.index.complindex();                
+                self.index.complindex();                
             }
         }
     }
@@ -143,19 +141,19 @@ impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd+Default {
     /// Deletes any repetitions
     fn mnonrepeat(&mut self) {
         match self.stype {
-            SType::Empty => Default::default(), // empty set
-            SType::Unordered => { // sorts data first
+            Empty => Default::default(), // empty set
+            Unordered => { // sorts data first
                 self.data = self.data.sortm(true);
                 msansrepeat(&mut self.data); 
             }, 
-            SType::Ordered =>  msansrepeat(&mut self.data),
-            SType::Indexed => { // spoofed by sorted data and trivial index
+            Ordered =>  msansrepeat(&mut self.data),
+            Indexed => { // spoofed by sorted data and trivial index
                 let mut orddata = self.index.unindex(&self.data,self.ascending);
                 msansrepeat(&mut orddata);
                 self.data = orddata; // resets data to ordered
                 self.index = trivindex(self.ascending, self.data.len());
             },
-            SType::Ranked => { // spoofed by sorted data and trivial index
+            Ranked => { // spoofed by sorted data and trivial index
                 let mut orddata = self.index.invindex().unindex(&self.data,self.ascending);
                 msansrepeat(&mut orddata);
                 self.data = orddata; // resets data to ordered
