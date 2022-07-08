@@ -9,9 +9,9 @@ impl<T> Set<T> where T: Copy+PartialOrd+Default {
 
     /// all in one Initialiser creates a new Set
     /// of self_type, from slice d, in asc order 
-    pub fn new(self_type: SType, d: &[T], asc:bool) -> Self {  
+    pub fn new(set_type: SType, d: &[T], asc:bool) -> Self {  
         if d.is_empty() { return Set::EMPTYSET }; // no data
-        match self_type {
+        match set_type {
             SType::Empty => Set::EMPTYSET, // empty self specified
             SType::Unordered => Set{ stype:SType::Unordered, ascending:true, data:d.to_vec(), index:Vec::new() }, 
             SType::Ordered => Set{ stype:SType::Ordered, ascending:asc, data:d.sortm(asc), index:Vec::new() },

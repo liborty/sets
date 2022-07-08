@@ -10,9 +10,9 @@ use indxvec::{Printing,Indices,Vecops};
 fn conversions() { 
    let v = vec![1.,14.,2.,13.,3.,12.,4.,11.,5.,10.,10.,6.,9.,7.,8.,16.];
    let setv = Set::new_unordered(&v);  
-   println!("{}",setv); // Display of Set 
-   println!("{}",setv.to_ordered(true)); // descending sorted data, index lost  
-   println!("{}",setv.to_indexed(false));
+   println!("{}",setv); // Display setv 
+   println!("{}",setv.to_ordered(true)); // ordered, ascending  
+   println!("{}",setv.to_indexed(false)); // indexed, descending
    let rset = setv.to_ranked(false).to_ordered(false);
    println!("{}",rset); 
    println!("{}",setv.to_same(&rset)); 

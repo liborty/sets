@@ -62,40 +62,49 @@ pub enum SType {
 
 ### Associated Initialisers
 
+Initialisers are associated with the struct Set, hence to invoke them, the `::` syntax is necessary, e.g. `Set::new(..)`
+
 ```rust
     /// all in one Initialiser creates a new Set
-    /// of self_type SType, from slice d, in asc order 
-    pub fn new(self_type: SType, d: &[T], asc:bool) -> Self { ... }
+    /// of any self_type SType, from slice d, in asc order 
+    pub fn new(set_type: SType, d: &[T], asc:bool) -> Self
 ```
 
-`unordered_from_slice()` wraps raw data slice &[T] in Set of Unordered type.
+There are also explicitly named convenience functions for all STypes:
+`new_empty, new_unordered, new_ordered, new_indexed, new_ranked`. All the ordered types (i.e. ordered, indexed, ranked) take a bool argument specifying ascending or descending order.
 
-`to_unordered, to_ordered, to_indexed, to_ranked` implement conversions to all types of Sets from all types.
-
-Initialisers and converters are associated with the Set Struct, hence the `::` syntax is necessary, e.g.:
+### Converters
 
 ```rust
-// Unordered set from slice v
-let su = Set::from_slice(&v);
-// Creates a descending sort index for v
-let si = s.to_indexed(false);
-// A mutable indexed set msiu, with unique elements, from si 
-let mut msiu = si.nonrepeat();
-// msiu mutated-reversed in place into the opposite order  
-msiu.mreverse; 
+    /// General converter - 
+    /// converts s to a Set of the same type and order as self 
+    /// (self only serves as a template).
+    pub fn to_same(&self, s:&Self) -> Self 
+```
+Again, we have explicitly named converters:
+`to_unordered, to_ordered, to_indexed, to_ranked`.
+
+```rust
+   let v = vec![1.,14.,2.,13.,3.,12.];
+   let setv = Set::new_unordered(&v);  
+   println!("{}",setv); // Display setv 
+   // ordered, ascending  
+   println!("{}",setv.to_ordered(true)); 
+   // indexed, descending
+   println!("{}",setv.to_indexed(false)); 
 ```
 
-It is highly recommended to read and run `tests/tests.rs` for many more examples of usage. Use a single thread to run them. It may be a bit slower but it will write the results in the right order:
+It is highly recommended to read and run `tests/tests.rs` for more examples of usage. Use a single thread to run them. It may be a bit slower but it will write the results in the right order:
 
 ```bash
 cargo test --release -- --test-threads=1 --nocapture --color always
 ```
 
-## Set Associated Functions
+## Set Functions
 
- Some of the methods are more efficient for the ordered and indexed sets, rather than for the unordered sets. For example, `member` and `search` are then able to use binary search. Union is like the classical merge but only one copy of items that were present in both input sets is kept. To remove repetitions from a single set at any other time, use `nonrepeat`.
+ Some of the general methods are more efficient for the ordered and indexed sets, rather than for the unordered sets. For example, `member` and `search` will automatically use the binary search. Union is like the classical merge with duplications across the sets removed. To remove repetitions within a set, use `nonrepeat`.
 
- The set operations between two operands are required to have the same end-type `<T>`. This is possibly a good type discipline but it could easily be relaxed.
+The STypes of the two operands of union, intersetion and difference can be different. However, they are required to have the same end-type `<T>`. This is, perhaps, a useful type discipline. 
 
 ## Trait MutSetOps
 
@@ -104,13 +113,14 @@ Here 'm' in the methods' names stands for 'mutable'. They overwrite the mutable 
 Implements the following methods for &mut Set:
 
 ```rust
+/// Mutable methods for Set<T>
 pub trait MutSetOps<T> {
-    /// Deletes an item of the same end-type from self
+    /// Deletes from self an item of the same end-type 
     fn mdelete(&mut self, item:T) -> bool;
     /// Inserts an item of the same end-type to self
     fn minsert(&mut self, item:T);
-    /// reverses the explicit sets, 
-    /// or index of indexed sets
+    /// reverses the data
+    /// or index for indexed and ranked sets
     fn mreverse(&mut self);
     /// Deletes any repetitions
     fn mnonrepeat(&mut self); 
