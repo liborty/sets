@@ -56,18 +56,6 @@ pub struct Set<T> {
     pub index: Vec<usize>
 }
 
-// static EMPTYSET:Set<f64> = Set{ stype:SType::Empty, ascending:true, data:vec![], index:vec![]};
-
-/// Default values for empty Set<T>
-/// Note that the data and index Vecs are empty 
-/// but still of the end types T and <usize> respectively
-/// Not needed since Rust 1.62.0
-//impl<T> Default for Set<T> {
-//    fn default() -> Self { 
-//        Set { stype:SType::Empty, ascending:true, data:vec![], index:vec![] }
-//    }
-//}
-
 /// Implementation of Display trait for struct Set.
 impl<T: std::fmt::Display> std::fmt::Display for Set<T> where T:Copy {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -83,9 +71,14 @@ impl<T: std::fmt::Display> std::fmt::Display for Set<T> where T:Copy {
 }
 
 /// Implementation of Clone trait for struct Set.    
-impl<T> Clone for Set<T> where T:Clone {
+impl<T> Clone for Set<T> where T:Copy+PartialOrd+Default {
     fn clone(&self) -> Self {
-        Set { stype:self.stype, ascending:self.ascending, data:self.data.to_vec(), index:self.index.to_vec() }
+        match self.stype {
+            // empty set is a unique constant (modulo T). 
+            // no need to make another copy of it, be it default valued, with Default::default()
+            SType::Empty => Set::EMPTYSET, 
+            _ => Set { stype:self.stype, ascending:self.ascending, data:self.data.to_vec(), index:self.index.to_vec() }
+        }
     }
 }
 

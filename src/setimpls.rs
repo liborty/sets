@@ -4,21 +4,47 @@ use indxvec::{MinMax,Indices,Vecops};
 /// Associated functions for conversions and set operations returning Set<T> = Self
 impl<T> Set<T> where T: Copy+PartialOrd+Default {
 
-    /// Initialiser - creates a new SType::Unordered Vec
-    pub fn unordered_from_slice(s: &[T]) -> Self { 
-        let mut newset = Set::default(); // returns this SType::Empty set for zero lentgh s
-        if !s.is_empty() { // have some data, so modify the newset with it
-            newset.stype = SType::Unordered;
-            newset.data = s.to_vec(); 
-        }; 
-        newset
+    /// Associated constant EMPTYSET, unique for each concrete end-type T
+    pub const EMPTYSET:Set<T> = Set{ stype:SType::Empty, ascending:true, data:Vec::new(), index:Vec::new() };
+
+    /// Creates a new empty Set
+    pub fn new_empty() -> Self { Self::EMPTYSET }
+
+    /// Initialiser - creates a new SType::Unordered Set from data
+    pub fn new_unordered(d: &[T]) -> Self {  
+        if !d.is_empty() { // have some data
+            Set{ stype:SType::Unordered, ascending:true, data:d.to_vec(), index:vec![] } } 
+        else { Set::EMPTYSET } 
+    }
+
+    /// Initialiser - creates a new SType::Ordered Set in asc order from data 
+    pub fn new_ordered(d: &[T],asc:bool) -> Self {  
+        if !d.is_empty() { // have some data
+            Set{ stype:SType::Ordered, ascending:asc, data:d.sortm(asc), index:vec![] } }
+        else { Set::EMPTYSET } 
+    }
+
+    /// Initialiser - creates a new SType::Indexed Set in asc order from data 
+    pub fn new_indexed(d: &[T],asc:bool) -> Self {  
+        if !d.is_empty() { // have some data
+            Set{ stype:SType::Indexed, ascending:asc, data:d.to_vec(), 
+                index: if asc { d.sortidx() } else { d.sortidx().revs() } } }
+        else { Set::EMPTYSET } 
+    }
+
+    /// Initialiser - creates a new SType::Ranked Set in asc order from data 
+    pub fn new_ranked(d: &[T],asc:bool) -> Self {  
+        if !d.is_empty() { // have some data
+            Set{ stype:SType::Ranked, ascending:asc, data:d.to_vec(), 
+                index: if asc { d.sortidx().invindex() } else { d.sortidx().revs().invindex() } } }
+        else { Set::EMPTYSET } 
     }
 
     /// Converter - to SType::Unordered Set
     /// Caution: this just throws away the valuable index!
     pub fn to_unordered(&self) -> Self { 
         match self.stype {
-            SType::Empty => self.clone(), // SType::Empty set is unique
+            SType::Empty => Set::EMPTYSET, 
             SType::Unordered => self.clone(), // no op
             SType::Ordered => Self{ stype:SType::Unordered, ascending:true, data:self.data.clone(), index:vec![] },
             SType::Indexed => Self{ stype:SType::Unordered, ascending:true, data:self.data.clone(), index:vec![] }, 
@@ -29,7 +55,7 @@ impl<T> Set<T> where T: Copy+PartialOrd+Default {
     /// Converts any Set type to ordered
     pub fn to_ordered(&self,asc:bool) -> Self {
         match self.stype {
-            SType::Empty => self.clone(), 
+            SType::Empty => Set::EMPTYSET, 
             SType::Unordered => Self{ stype:SType::Ordered, ascending:asc, data:self.data.sortm(asc), index:vec![] },
             SType::Ordered => self.clone(), // no op
             SType::Indexed => Self{ stype:SType::Ordered, ascending:asc, 
@@ -44,7 +70,7 @@ impl<T> Set<T> where T: Copy+PartialOrd+Default {
     /// Converts any Set type to indexed
     pub fn to_indexed(&self,asc:bool) -> Self {
         match self.stype {
-            SType::Empty => self.clone(),
+            SType::Empty => Set::EMPTYSET,
             SType::Unordered => Self{ stype:SType::Indexed, ascending:asc, data:self.data.clone(), 
                 index: if asc {self.data.sortidx()} else {self.data.sortidx().revs()} },
             SType::Ordered => Self{ stype:SType::Indexed, ascending:asc, data:self.data.clone(), 
@@ -59,7 +85,7 @@ impl<T> Set<T> where T: Copy+PartialOrd+Default {
     /// Converts any Set type to ranked
     pub fn to_ranked(&self,asc:bool) -> Self {
         match self.stype {
-            SType::Empty => self.clone(),
+            SType::Empty => Set::EMPTYSET,
             SType::Unordered => Self{ stype:SType::Ranked, ascending:asc, data:self.data.clone(), 
                 index: if asc {self.data.sortidx().invindex()} 
                     else {self.data.sortidx().revs().invindex()} },
@@ -76,7 +102,7 @@ impl<T> Set<T> where T: Copy+PartialOrd+Default {
     pub fn to_self(&self,s: &Self) -> Self { 
         // if self.stype = s.stype { return *s }; // nothing to do
         match self.stype {
-            SType::Empty => Default::default(), // SType::Empty set
+            SType::Empty => Set::EMPTYSET, // Default::default()
             SType::Unordered => s.to_unordered(), 
             SType::Ordered => s.to_ordered(self.ascending),
             SType::Indexed => s.to_indexed(self.ascending),
