@@ -1,8 +1,83 @@
 #![warn(missing_docs)]
 use crate::{trivindex,SType,Set,MutSetOps};
-use indxvec::{Indices,Vecops,Mutsort};
+use indxvec::{F64,Indices,Vecops,Mutops};
 
 impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd+Default {
+
+    /// Makes a Set unordered
+    /// Caution: this just throws away the valuable index!
+    fn munordered(&mut self) { 
+        match self.stype {
+            SType::Empty | SType::Unordered => return, // no op
+            SType::Ordered => (), // leave data as is, just change SType below
+            SType::Indexed | SType::Ranked  => self.index = Vec::new() // remove the index
+        }
+        self.stype = SType::Unordered;
+        // ascending field has no meaning for unordered, so leaving it as it is 
+    }
+
+    /// Makes a Set ordered
+    fn mordered(&mut self, asc:bool) where F64:From<T> {
+        match self.stype {
+            SType::Empty => return, // no op
+            SType::Unordered => { self.data.muthashsort(); if !asc { self.data.mutrevs() } },
+            SType::Ordered => if self.ascending != asc { self.data.mutrevs() }, 
+            SType::Indexed => { 
+                self.data = self.index.unindex(&self.data, self.ascending == asc);
+                self.index = Vec::new(); },
+            SType::Ranked => {
+                self.data = self.index.invindex().unindex(&self.data, self.ascending == asc);
+                self.index = Vec::new(); }
+        } 
+        self.stype = SType::Ordered; // new SType 
+        self.ascending = asc;  // new ordering    
+    }
+
+    /// Makes any Set indexed
+    fn mindexed(&mut self,asc:bool) where F64:From<T> { 
+        match self.stype { 
+            SType::Empty => return, // empty set, no op 
+            SType::Unordered => {                 
+                self.index = self.data.hashsort_indexed();
+                if !asc { self.index.mutrevs(); }; },
+            SType::Ordered => self.index = trivindex(self.ascending == asc,self.data.len()),
+            SType::Indexed => if self.ascending != asc { self.index.mutrevs() },
+            SType::Ranked => {
+                if self.ascending != asc { self.index = self.index.complindex() }; 
+                self.index = self.index.invindex(); }, 
+        }
+        self.stype = SType::Indexed; // new SType 
+        self.ascending = asc;  // new ordering 
+    }
+
+    /// Converts any Set type to ranked
+    fn mranked(&mut self,asc:bool) {
+        match self.stype {
+            SType::Empty => return, // empty set, no op 
+            SType::Unordered =>  {                 
+                self.index = self.data.mergesort_indexed().invindex();
+                if !asc { self.index.complindex(); }; },
+            SType::Ordered => self.index = trivindex(self.ascending == asc,self.data.len()),
+            SType::Indexed => {
+                if self.ascending != asc { self.index.mutrevs() }; 
+                self.index = self.index.invindex(); }, 
+            SType::Ranked => if self.ascending != asc { self.index = self.index.complindex() }
+        } 
+        self.stype = SType::Ranked; // new SType 
+        self.ascending = asc;  // new ordering    
+    }
+
+    /// General converter: s -> Set of the same type and order as self
+    /// self only serves as a template for the type and order and is not involved in the conversion
+    fn msame(&mut self, s:&mut Self) where F64:From<T> { 
+        match self.stype { 
+            SType::Empty => *s = Set::EMPTYSET, //  was Default::default()
+            SType::Unordered => s.munordered(), 
+            SType::Ordered => s.mordered(self.ascending),
+            SType::Indexed => s.mindexed(self.ascending),
+            SType::Ranked => s.mranked(self.ascending)
+        }
+    }       
 
     /// Deletes an item v of the same end-type from self
     /// Returns false if item not found 
@@ -129,9 +204,10 @@ impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd+Default {
 
     /// Deletes any repetitions
     fn mnonrepeat(&mut self) {
+        if self.data.len() < 2 { return }; // nothing to be done here
         match self.stype {
-            SType::Empty => Default::default(), // empty set
-            SType::Unordered => { // sorts data first
+            SType::Empty => (), // empty set, do nothing
+            SType::Unordered => { // sort data 
                 self.data = self.data.sortm(true);
                 self.data.dedup(); 
             }, 

@@ -85,14 +85,14 @@ fn mutabletest() {
 #[test]
 fn nlptest() { 
    let sentence1 = "Alphabetic ordering puts punctuation first first and capital Letters first .";
-   let sentence2 = "It sorts by Letters, ordering by Letters"; 
    let v1 = sentence1.split(' ').collect::<Vec<_>>();
+   let sentence2 = "It sorts by Letters, ordering by Letters";  
    let v2 = sentence2.split(' ').collect::<Vec<_>>();  
    let setv = Set::new_ranked(&v1,true);  
    println!("{}",setv); // Display of Set
    println!("Reverse-> {}",setv.reverse()); 
    println!("Nonrepeat-> {}",setv.nonrepeat()); // Display of Set    
-   println!("Is {} a member? {}\n",&"Spain",setv.member("Spain")); 
+   println!("Is {} a member? {}\n",&"Spain",setv.member("Spain").rd()); 
    println!("Infsup of original data: {}",setv.infsup());
    let setw = Set::new_indexed(&v2,true);
    println!("\nNew {}",setw);

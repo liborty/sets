@@ -6,7 +6,7 @@ pub mod setimpls;
 /// Mutable set operations, implemented for &mut Set
 pub mod mutimpls;
 
-use indxvec::{Printing};
+use indxvec::{F64,Printing};
 
 /// Constructs a trivial index (for already sorted sets), 
 /// of required ascending or descending order and size
@@ -82,8 +82,18 @@ impl<T> Clone for Set<T> where T:Copy+PartialOrd+Default {
     }
 }
 
-/// Mutable methods for all four of the set structs
+/// Mutable methods for &mut Set<T>
 pub trait MutSetOps<T> {
+    /// Makes a Set unordered
+    fn munordered(&mut self);
+    /// Makes a Set ordered
+    fn mordered(&mut self, asc:bool) where F64:From<T>;
+    /// Makes any Set indexed
+    fn mindexed(&mut self,asc:bool) where F64:From<T>;
+    /// Converts any Set type to ranked
+    fn mranked(&mut self,asc:bool);
+    /// General converter: s -> Set of the same type and order as self
+    fn msame(&mut self, s:&mut Self) where F64:From<T>; 
     /// Deletes an item of the same end-type from self
     fn mdelete(&mut self, item:T) -> bool;
     /// Inserts an item of the same end-type to self

@@ -16,9 +16,9 @@ impl<T> Set<T> where T: Copy+PartialOrd+Default {
             SType::Unordered => Set{ stype:SType::Unordered, ascending:true, data:d.to_vec(), index:Vec::new() }, 
             SType::Ordered => Set{ stype:SType::Ordered, ascending:asc, data:d.sortm(asc), index:Vec::new() },
             SType::Indexed =>  Set{ stype:SType::Indexed, ascending:asc, data:d.to_vec(), 
-                index: if asc { d.sortidx() } else { d.sortidx().revs() } },
+                index: if asc { d.mergesort_indexed() } else { d.mergesort_indexed().revs() } },
             SType::Ranked => Set{ stype:SType::Ranked, ascending:asc, data:d.to_vec(), 
-                index: if asc { d.sortidx().invindex() } else { d.sortidx().revs().invindex() } } }
+                index: if asc { d.mergesort_indexed().invindex() } else { d.mergesort_indexed().revs().invindex() } } }
     }
 
     /// Creates a new empty Set
@@ -42,7 +42,7 @@ impl<T> Set<T> where T: Copy+PartialOrd+Default {
     pub fn new_indexed(d: &[T], asc:bool) -> Self {  
         if !d.is_empty() { // have some data
             Set{ stype:SType::Indexed, ascending:asc, data:d.to_vec(), 
-                index: if asc { d.sortidx() } else { d.sortidx().revs() } } }
+                index: if asc { d.mergesort_indexed() } else { d.mergesort_indexed().revs() } } }
         else { Set::EMPTYSET } 
     }
 
@@ -50,7 +50,7 @@ impl<T> Set<T> where T: Copy+PartialOrd+Default {
     pub fn new_ranked(d: &[T], asc:bool) -> Self {  
         if !d.is_empty() { // have some data
             Set{ stype:SType::Ranked, ascending:asc, data:d.to_vec(), 
-                index: if asc { d.sortidx().invindex() } else { d.sortidx().revs().invindex() } } }
+                index: if asc { d.mergesort_indexed().invindex() } else { d.mergesort_indexed().revs().invindex() } } }
         else { Set::EMPTYSET } 
     }
 
@@ -58,12 +58,9 @@ impl<T> Set<T> where T: Copy+PartialOrd+Default {
     /// Caution: this just throws away the valuable index!
     pub fn to_unordered(&self) -> Self { 
         match self.stype {
-            SType::Empty => Set::EMPTYSET, 
-            SType::Unordered => self.clone(), // no op
-            // ascending field has no sense for unordered, so just self it to default (true)
-            SType::Ordered => Self{ stype:SType::Unordered, ascending:true, data:self.data.clone(), index:Vec::new() },
-            SType::Indexed => Self{ stype:SType::Unordered, ascending:true, data:self.data.clone(), index:Vec::new() }, 
-            SType::Ranked => Self{ stype:SType::Unordered, ascending:true, data:self.data.clone(), index:Vec::new() }
+            SType::Empty => Set::EMPTYSET, // no op 
+            // ascending field has no meaning for unordered, so just inherit it
+            _ => Self{ stype:SType::Unordered, ascending:self.ascending, data:self.data.clone(), index:Vec::new() }
         }
     }
 
@@ -72,7 +69,7 @@ impl<T> Set<T> where T: Copy+PartialOrd+Default {
         match self.stype {
             SType::Empty => Set::EMPTYSET, 
             SType::Unordered => Self{ stype:SType::Ordered, ascending:asc, data:self.data.sortm(asc), index:Vec::new()},
-            SType::Ordered => if self.ascending == asc { self.clone() }
+            SType::Ordered => if self.ascending == asc { self.clone() } // just a copy
                 else { Self{ stype:SType::Ordered, ascending:asc, data:self.data.revs(), index:Vec::new() } },
             SType::Indexed => Self{ stype:SType::Ordered, ascending:asc, 
                 data:self.index.unindex(&self.data, self.ascending == asc), index:Vec::new() },
@@ -86,15 +83,14 @@ impl<T> Set<T> where T: Copy+PartialOrd+Default {
         match self.stype {
             SType::Empty => Set::EMPTYSET,
             SType::Unordered => Self{ stype:SType::Indexed, ascending:asc, data:self.data.clone(), 
-                index: if asc {self.data.sortidx()} else {self.data.sortidx().revs()} },
+                index: if asc {self.data.mergesort_indexed()} else {self.data.mergesort_indexed().revs()} },
             SType::Ordered => Self{ stype:SType::Indexed, ascending:asc, data:self.data.clone(), 
                 index: trivindex(self.ascending == asc,self.data.len()) },
-            SType::Indexed =>  if self.ascending == asc { self.clone() }
-                else { Self{ stype:SType::Indexed, ascending:asc, data:self.data.clone(),             
+            SType::Indexed =>  if self.ascending == asc { self.clone() } // no op
+                else { Self{ stype:SType::Indexed, ascending:asc, data:self.data.clone(),
                     index: self.index.revs() } },
             SType::Ranked => Self{ stype:SType::Indexed, ascending:asc, data:self.data.clone(),             
-                index: if self.ascending == asc {self.index.invindex()} 
-                    else {self.index.invindex().revs()}}
+                index: if self.ascending == asc {self.index.invindex()} else {self.index.invindex().revs()}}
         }    
     }
 
@@ -103,14 +99,16 @@ impl<T> Set<T> where T: Copy+PartialOrd+Default {
         match self.stype {
             SType::Empty => Set::EMPTYSET,
             SType::Unordered => Self{ stype:SType::Ranked, ascending:asc, data:self.data.clone(), 
-                index: if asc {self.data.sortidx().invindex()} 
-                    else {self.data.sortidx().revs().invindex()} },
+                index: if asc {self.data.mergesort_indexed().invindex()} 
+                    else {self.data.mergesort_indexed().revs().invindex()} },
             SType::Ordered => Self{ stype:SType::Ranked, ascending:asc, data:self.data.clone(), 
                 index: trivindex(self.ascending == asc,self.data.len()) },
             SType::Indexed => Self{ stype:SType::Ranked, ascending:asc, data:self.data.clone(),             
                 index: if self.ascending == asc {self.index.invindex()} 
                     else {self.index.revs().invindex()}}, 
-            SType::Ranked => self.clone()
+            SType::Ranked => if self.ascending == asc { self.clone() } // no op
+                else { Self{ stype:SType::Ranked, ascending:asc, data:self.data.clone(),
+                    index: {self.index.complindex()} } }
         }    
     }
 

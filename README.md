@@ -113,6 +113,33 @@ Here 'm' in the methods' names stands for 'mutable'. They overwrite the mutable 
 Implements the following methods for &mut Set:
 
 ```rust
+/// Mutable methods for &mut Set<T>
+pub trait MutSetOps<T> {
+    /// Makes a Set unordered
+    fn munordered(&mut self);
+    /// Makes a Set ordered
+    fn mordered(&mut self, asc:bool) where F64:From<T>;
+    /// Makes any Set indexed
+    fn mindexed(&mut self,asc:bool) where F64:From<T>;
+    /// Converts any Set type to ranked
+    fn mranked(&mut self,asc:bool);
+    /// General converter: s -> Set of the same type and order as self
+    fn msame(&mut self, s:&mut Self) where F64:From<T>; 
+    /// Deletes an item of the same end-type from self
+    fn mdelete(&mut self, item:T) -> bool;
+    /// Inserts an item of the same end-type to self
+    fn minsert(&mut self, item:T);
+    /// reverses the vector of explicit sets and index of indexed sets
+    fn mreverse(&mut self);
+    /// Deletes any repetitions
+    fn mnonrepeat(&mut self); 
+    /// Union of two sets of the same type
+    fn munion(&mut self, s: &Self);
+    /// Intersection of two sets of the same type
+    fn mintersection(&mut self, s: &Self);
+    /// Removing s from self (i.e. self-s)
+    fn mdifference(&mut self, s: &Self);
+}
 /// Mutable methods for Set<T>
 pub trait MutSetOps<T> {
     /// Deletes from self an item of the same end-type 
@@ -134,6 +161,8 @@ pub trait MutSetOps<T> {
 ```
 
 ## Release Notes (Latest First)
+
+**Version 1.1.1** - Eliminating unnecessary clonings. Updating to the latest dependency on  indxvec 1.2.8.
 
 **Version 1.1.0** - Joined all four types of sets into one Struct Set. Simplified and generalised code by using enum generics.
 
