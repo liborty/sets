@@ -206,13 +206,13 @@ impl<T> Set<T> where T: Copy+PartialOrd+Default {
     pub fn search(&self, m: T) -> Option<usize> { 
         match self.stype {
             SType::Empty => None,
-            SType::Unordered => self.data.member(m), // from indxvec ,
-            SType::Ordered => if self.ascending { self.data.memsearch(m)}
-                else {self.data.memsearchdesc(m)},     
-            SType::Indexed => if self.ascending { self.data.memsearch_indexed(&self.index,m) }
-                else { self.data.memsearchdesc_indexed(&self.index,m) },
-            SType::Ranked => if self.ascending { self.data.memsearch_indexed(&self.index.invindex(),m) }
-                else { self.data.memsearchdesc_indexed(&self.index.invindex(),m) }, 
+            SType::Unordered => self.data.member(m,true), // from indxvec ,
+            SType::Ordered => { let r = self.data.binsearch(&m);
+                if r.start == r.end { None } else { Some(r.start) } },    
+            SType::Indexed => { let r = self.data.binsearch_indexed(&self.index,&m);
+                if r.start == r.end { None } else { Some(self.index[r.start]) } },    
+            SType::Ranked =>  { let r = self.data.binsearch_indexed(&self.index.invindex(),&m);
+                if r.start == r.end { None } else { Some(self.index[r.start]) }} 
             }       
     }       
     
@@ -222,18 +222,20 @@ impl<T> Set<T> where T: Copy+PartialOrd+Default {
         self.search(m).is_some() 
     }
     
+    /*
     /// Mostly for non-members. Index of the next item in order, or self.len(). 
     /// SType::Unordered selfs return self.data.len() as 'not found'.
     pub fn position(&self, m:T)  -> usize {
         match self.stype {
             SType::Empty => 0_usize,
             SType::Unordered => self.data.len(),
-            SType::Ordered => if self.ascending { self.data.binsearch(m)}
+            SType::Ordered => self.data.binsearch(&m,),
                 else {self.data.binsearchdesc(m)},     
             SType::Indexed => if self.ascending { self.data.binsearch_indexed(&self.index,m) }
                 else { self.data.binsearchdesc_indexed(&self.index,m) },
             SType::Ranked => if self.ascending { self.data.binsearch_indexed(&self.index.invindex(),m) }
             else { self.data.binsearchdesc_indexed(&self.index.invindex(),m) },   
         }
-    }   
+    }  
+    */ 
 }
