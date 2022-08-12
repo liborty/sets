@@ -110,8 +110,6 @@ The STypes of the two operands of union, intersetion and difference can be diffe
 
 Here 'm' in the methods' names stands for 'mutable'. They overwrite the mutable set to which they are applied with the result. Thus they are not *functional* but in the context of handling large vectors, they are often simpler and more efficient. At the price of destroying the previous contents of self, of course.
 
-Implements the following methods for &mut Set:
-
 ```rust
 /// Mutable methods for &mut Set<T>
 pub trait MutSetOps<T> {
@@ -125,29 +123,13 @@ pub trait MutSetOps<T> {
     fn mranked(&mut self,asc:bool);
     /// General converter: s -> Set of the same type and order as self
     fn msame(&mut self, s:&mut Self) where F64:From<T>; 
-    /// Deletes an item of the same end-type from self
+    /// Deletes the first item from self
     fn mdelete(&mut self, item:T) -> bool;
+    /// Deletes all occurrences of a matching item from self, returns their count
+    fn mdeleteall(&mut self, item:T) -> usize;
     /// Inserts an item of the same end-type to self
     fn minsert(&mut self, item:T);
     /// reverses the vector of explicit sets and index of indexed sets
-    fn mreverse(&mut self);
-    /// Deletes any repetitions
-    fn mnonrepeat(&mut self); 
-    /// Union of two sets of the same type
-    fn munion(&mut self, s: &Self);
-    /// Intersection of two sets of the same type
-    fn mintersection(&mut self, s: &Self);
-    /// Removing s from self (i.e. self-s)
-    fn mdifference(&mut self, s: &Self);
-}
-/// Mutable methods for Set<T>
-pub trait MutSetOps<T> {
-    /// Deletes from self an item of the same end-type 
-    fn mdelete(&mut self, item:T) -> bool;
-    /// Inserts an item of the same end-type to self
-    fn minsert(&mut self, item:T);
-    /// reverses the data
-    /// or index for indexed and ranked sets
     fn mreverse(&mut self);
     /// Deletes any repetitions
     fn mnonrepeat(&mut self); 
@@ -162,7 +144,9 @@ pub trait MutSetOps<T> {
 
 ## Release Notes (Latest First)
 
-**Version 1.1.1** - Eliminating unnecessary clonings. Updating to the latest dependency on  indxvec 1.2.8.
+**Version 1.1.2** - Updated to indxvec 1.3.3. Pruned and simplified some code. Added `deleteall` to  trait `MutSetOps`.
+
+**Version 1.1.1** - Eliminating unnecessary cloning. Updating to the latest dependency on  indxvec 1.2.8.
 
 **Version 1.1.0** - Joined all four types of sets into one Struct Set. Simplified and generalised code by using enum generics.
 

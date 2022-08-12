@@ -92,26 +92,78 @@ impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd+Default {
             }, 
             SType::Ordered => {
                 let r = self.data.binsearch(&item);
-                if r.start == r.end { false } else { 
-                    self.data.remove(r.start); true } // remove + shift, preserves ordering
+                if r.is_empty() { return false; };
+                self.data.remove(r.start); // remove + shift, preserves ordering
+                true
             },
+
             SType::Indexed => {
-                self.data = self.index.unindex(&self.data,self.ascending); // make ordered data
-                let r = self.data.binsearch(&item);
-                if r.start == r.end { false } else { // success 
-                    self.data.remove(r.start); // remove + shift, preserves ordering     
-                    self.index = trivindex(self.ascending,self.data.len());
-                    true }
-            },
+                let r = self.data.binsearch_indexed(&self.index,&item);
+                if r.is_empty() { return false; };
+                let datasub = self.index[r.start];
+                self.data.remove(datasub); // remove + shift data , preserves ordering
+                self.index.remove(r.start); // remove + shift data , preserves ordering               
+                for idxitem in  &mut self.index { // repair the whole sort index
+                    if *idxitem > datasub { *idxitem -= 1 };
+                }
+                true },
+
             SType::Ranked => {
-                let sortindex = self.index.invindex();
-                self.data = sortindex.unindex(&self.data,self.ascending); // make ordered data
+                let mut sortindex = self.index.invindex();
+                let r = self.data.binsearch_indexed(&sortindex,&item);
+                if r.is_empty() { return false; };
+                let datasub = sortindex[r.start];
+                self.data.remove(datasub); // remove + shift data , preserves ordering
+                sortindex.remove(r.start); // remove + shift data , preserves ordering               
+                for idxitem in &mut sortindex { // repair the whole sort index
+                    if *idxitem > datasub { *idxitem -= 1 };
+                }
+                self.index = sortindex.invindex(); // reconstruct rank index
+                true },
+        }
+    }  
+
+    /// Deletes all occurrences of a matching item from self
+    /// Returns number found and deleted 
+    fn mdeleteall(&mut self, item:T) -> usize where Self:Sized {
+        let mut count = 0_usize;
+        match self.stype {
+            SType::Empty => 0, // empty set
+            SType::Unordered => {
+                while let Some(i) = self.data.member(item,true) {
+                    count += 1;
+                    // don't care about order, swap_remove swaps in the last item, fast
+                    self.data.swap_remove(i);
+                };
+                count
+            }, 
+            SType::Ordered => {
                 let r = self.data.binsearch(&item);
-                if r.start == r.end { false } else { // success 
-                    self.data.remove(r.start); // remove + shift, preserves ordering     
-                    self.index = trivindex(self.ascending,self.data.len());
-                    true }
+                if r.is_empty() { return 0; };
+                let count = r.len();
+                self.data.drain(r); 
+                count
             },
+
+            SType::Indexed => {
+                let mut ord_data = self.index.unindex(&self.data,self.ascending);
+                let r = ord_data.binsearch(&item);
+                if r.is_empty() { return 0; }; 
+                let count = r.len();
+                ord_data.drain(r);
+                self.data = ord_data;
+                self.index = trivindex(self.ascending,self.data.len());
+                count },
+
+            SType::Ranked => {
+                let mut ord_data = self.index.invindex().unindex(&self.data,self.ascending);
+                let r = ord_data.binsearch(&item);
+                if r.is_empty() { return 0; }; 
+                let count = r.len();
+                ord_data.drain(r);
+                self.data = ord_data;
+                self.index = trivindex(self.ascending,self.data.len());
+                count } 
         }
     }  
 
@@ -168,7 +220,7 @@ impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd+Default {
         }
     }
 
-    /// Deletes any repetitions
+    /// Deletes all repetitions
     fn mnonrepeat(&mut self) {
         if self.data.len() < 2 { return }; // nothing to be done here
         match self.stype {

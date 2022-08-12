@@ -94,13 +94,15 @@ pub trait MutSetOps<T> {
     fn mranked(&mut self,asc:bool);
     /// General converter: s -> Set of the same type and order as self
     fn msame(&mut self, s:&mut Self) where F64:From<T>; 
-    /// Deletes an item of the same end-type from self
+    /// Deletes the first item from self
     fn mdelete(&mut self, item:T) -> bool;
+    /// Deletes all occurrences of a matching item from self, returns their count
+    fn mdeleteall(&mut self, item:T) -> usize;
     /// Inserts an item of the same end-type to self
     fn minsert(&mut self, item:T);
     /// reverses the vector of explicit sets and index of indexed sets
     fn mreverse(&mut self);
-    /// Deletes any repetitions
+    /// Deletes all repetitions
     fn mnonrepeat(&mut self); 
     /// Union of two sets of the same type
     fn munion(&mut self, s: &Self);

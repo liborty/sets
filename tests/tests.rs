@@ -70,12 +70,12 @@ fn mutabletest() {
     println!("{}",seto); 
     seto.minsert(9.5);
     println!("Inserted 9.5 to {}",seto);
-    let setix = seti.union(&seto);
-    println!("Union {}",setix);   
-    seto.mdelete(9.5);
-    println!("Deleted 9.5 from {}",seto);                
+    let mut union = seti.union(&seto);
+    println!("Union {}",union);  
+    let count = union.mdeleteall(16.);  
+    println!("Deleted {} 16s from {}",count,union);                
     setr.mintersection(&setr2);
-    println!("Intersection-> {}",&setr);
+    println!("Intersection of\n{}\n{} -> {}",&setr,setr2,&setr);
     setr.mdifference(&setr2);
     println!("Difference-> {}",&setr);
    

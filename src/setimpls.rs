@@ -220,22 +220,6 @@ impl<T> Set<T> where T: Copy+PartialOrd+Default {
     /// Throws away the subscript found by `search`
     pub fn member(&self, m: T) -> bool {
         self.search(m).is_some() 
-    }
-    
-    /*
-    /// Mostly for non-members. Index of the next item in order, or self.len(). 
-    /// SType::Unordered selfs return self.data.len() as 'not found'.
-    pub fn position(&self, m:T)  -> usize {
-        match self.stype {
-            SType::Empty => 0_usize,
-            SType::Unordered => self.data.len(),
-            SType::Ordered => self.data.binsearch(&m,),
-                else {self.data.binsearchdesc(m)},     
-            SType::Indexed => if self.ascending { self.data.binsearch_indexed(&self.index,m) }
-                else { self.data.binsearchdesc_indexed(&self.index,m) },
-            SType::Ranked => if self.ascending { self.data.binsearch_indexed(&self.index.invindex(),m) }
-            else { self.data.binsearchdesc_indexed(&self.index.invindex(),m) },   
-        }
-    }  
-    */ 
+    }   
+
 }
