@@ -94,7 +94,7 @@ Again, we have explicitly named converters:
    println!("{}",setv.to_indexed(false)); 
 ```
 
-It is highly recommended to read and run `tests/tests.rs` for more examples of usage. Use a single thread to run them. It may be a bit slower but it will write the results in the right order:
+It is highly recommended to read and run [`tests/tests.rs`](https://github.com/liborty/sets/blob/main/tests/tests.rs) for more examples of usage. Use a single thread to run them. It may be a bit slower but it will write the results in the right order:
 
 ```bash
 cargo test --release -- --test-threads=1 --nocapture --color always
@@ -104,7 +104,7 @@ cargo test --release -- --test-threads=1 --nocapture --color always
 
  Some of the general methods are more efficient for the ordered and indexed sets, rather than for the unordered sets. For example, `member` and `search` will automatically use the binary search. Union is like the classical merge with duplications across the sets removed. To remove repetitions within a set, use `nonrepeat`.
 
-The STypes of the two operands of union, intersetion and difference can be different. However, they are required to have the same end-type `<T>`. This is, perhaps, a useful type discipline. 
+The STypes of the two operands of union, intersection and difference can be different. However, they are required to have the same end-type `<T>`. This is, perhaps, a useful type discipline. 
 
 ## Trait MutSetOps
 
@@ -116,13 +116,13 @@ pub trait MutSetOps<T> {
     /// Makes a Set unordered
     fn munordered(&mut self);
     /// Makes a Set ordered
-    fn mordered(&mut self, asc:bool) where F64:From<T>;
+    fn mordered(&mut self, asc:bool) where f64:From<T>;
     /// Makes any Set indexed
-    fn mindexed(&mut self,asc:bool) where F64:From<T>;
+    fn mindexed(&mut self,asc:bool) where f64:From<T>;
     /// Converts any Set type to ranked
     fn mranked(&mut self,asc:bool);
     /// General converter: s -> Set of the same type and order as self
-    fn msame(&mut self, s:&mut Self) where F64:From<T>; 
+    fn msame(&mut self, s:&mut Self) where f64:From<T>; 
     /// Deletes the first item from self
     fn mdelete(&mut self, item:T) -> bool;
     /// Deletes all occurrences of a matching item from self, returns their count
@@ -143,6 +143,8 @@ pub trait MutSetOps<T> {
 ```
 
 ## Release Notes (Latest First)
+
+**Version 1.1.3** - Updated dependency indxvec 1.4.2.
 
 **Version 1.1.2** - Updated to indxvec 1.3.3. Pruned and simplified some code. Added `deleteall` to  trait `MutSetOps`.
 
