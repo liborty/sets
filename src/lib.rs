@@ -44,7 +44,7 @@ impl std::fmt::Display for SType {
 }
 
 /// The struct type for sets
-#[derive(Default)]
+#[derive(Default,Clone)]
 pub struct Set<T> {
     /// type of the set
     pub stype: SType,
@@ -70,6 +70,7 @@ impl<T: std::fmt::Display> std::fmt::Display for Set<T> where T:Copy {
     }
 }
 
+/*
 /// Implementation of Clone trait for struct Set.    
 impl<T> Clone for Set<T> where T:Copy+PartialOrd+Default {
     fn clone(&self) -> Self {
@@ -81,6 +82,7 @@ impl<T> Clone for Set<T> where T:Copy+PartialOrd+Default {
         }
     }
 }
+*/
 
 /// Mutable methods for &mut Set<T>
 pub trait MutSetOps<T> {
