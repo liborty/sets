@@ -3,8 +3,7 @@
 [<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/liborty/sets/HEAD?logo=github">](https://github.com/liborty/sets)
 [<img alt="crates.io" src="https://img.shields.io/crates/v/sets?logo=rust">](https://crates.io/crates/sets)
 [<img alt="crates.io" src="https://img.shields.io/crates/d/sets?logo=rust">](https://crates.io/crates/sets)
-[<img alt="docs.rs" src="https://img.shields.io/docsrs/sets?logo=rust&logoColor=white">](https://docs.rs/sets/)
-[![Actions Status](https://github.com/liborty/sets/workflows/compilation/badge.svg)](https://github.com/liborty/sets/actions)
+[<img alt="docs.rs" src="https://img.shields.io/docsrs/sets?logo=rust&logoColor=white">](https://docs.rs/sets/) [![Actions Status](https://github.com/liborty/sets/workflows/test/badge.svg)](https://github.com/liborty/sets/actions)
 
 ## Description
 
@@ -101,6 +100,8 @@ It is highly recommended to read and run [`tests/tests.rs`](https://github.com/l
 cargo test --release -- --test-threads=1 --nocapture --color always
 ```
 
+The output can be seen by unclicking the last badge above and then the automated test logs therein. 
+
 ## Set Functions
 
  Some of the general methods are more efficient for the ordered and indexed sets, rather than for the unordered sets. For example, `member` and `search` will automatically use the binary search. Union is like the classical merge with duplications across the sets removed. To remove repetitions within a set, use `nonrepeat`.
@@ -145,7 +146,7 @@ pub trait MutSetOps<T> {
 
 ## Release Notes (Latest First)
 
-**Version 1.1.3** - Updated dependency indxvec 1.4.2.
+**Version 1.1.4** - Updated dependency `indxvec 1.4`. Added automated github actions test.
 
 **Version 1.1.2** - Updated to indxvec 1.3.3. Pruned and simplified some code. Added `deleteall` to  trait `MutSetOps`.
 
