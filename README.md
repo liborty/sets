@@ -76,6 +76,7 @@ There are also explicitly named convenience functions for all STypes:
     /// (self only serves as a template).
     pub fn to_same(&self, s:&Self) -> Self 
 ```
+
 Again, we have explicitly named converters:
 `to_unordered, to_ordered, to_indexed, to_ranked`.
 
