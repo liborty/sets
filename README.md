@@ -1,15 +1,10 @@
-# Sets
+# Sets [<img alt="crates.io" src="https://img.shields.io/crates/v/sets?logo=rust">](https://crates.io/crates/sets) [<img alt="crates.io" src="https://img.shields.io/crates/d/sets?logo=rust">](https://crates.io/crates/sets) [<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/liborty/sets/HEAD?logo=github">](https://github.com/liborty/sets) [![Actions Status](https://github.com/liborty/sets/workflows/test/badge.svg)](https://github.com/liborty/sets/actions)
 
-[<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/liborty/sets/HEAD?logo=github">](https://github.com/liborty/sets)
-[<img alt="crates.io" src="https://img.shields.io/crates/v/sets?logo=rust">](https://crates.io/crates/sets)
-[<img alt="crates.io" src="https://img.shields.io/crates/d/sets?logo=rust">](https://crates.io/crates/sets)
-[<img alt="docs.rs" src="https://img.shields.io/docsrs/sets?logo=rust&logoColor=white">](https://docs.rs/sets/) [![Actions Status](https://github.com/liborty/sets/workflows/test/badge.svg)](https://github.com/liborty/sets/actions)
+Set operations, plus efficient sorting, ranking, searching, etc. The aim is to avoid moving data as much as possible. This is done by manipulating indices instead.
 
-## Description
+## Short Description
 
-This crate defines `Struct: Set`, wrapping up five kinds of sets: Empty, Unordered, Ordered, Indexed and Ranked, and common methods acting upon them. It adds organisation and type safety to some primitive methods imported from crate `indxvec`.
-
-The main capabilities of `Sets` include the usual set operations, plus efficient sorting, ranking, searching, etc. The aim is to avoid moving data as much as possible. This is done by manipulating indices instead. These methods work on any generic vectors (or slices) of primitive end types `<T>`. Also, on any arbitrarily complex user end type, as long as the required traits `PartialOrd` and `Copy`, are implemented for it by the user.
+This crate defines `Struct: Set`, which wraps five kinds of sets: Empty, Unordered, Ordered, Indexed and Ranked, and methods acting upon them. These methods work on any generic vectors (or slices) of primitive end types `<T>`. Also, on any arbitrarily complex user end type, as long as the required traits `PartialOrd` and `Copy`, are implemented for it (by the user). It adds organisation and type safety to lower level methods from crate `indxvec`.
 
 ## Usage
 
@@ -38,7 +33,7 @@ pub struct Set<T> {
 ```
 
 `Clone` and `Display` traits are implemented for `Set` and `SType`.  
-`Default` is derived, thus `Default::default()` generates a copy of an empty set.
+`Default` is derived, thus `Default::default()` generates an empty set.
 
 `SType` specifies one of the five kinds of sets. It is dealt with by 'enumeration generics'.
 
@@ -65,7 +60,7 @@ pub enum SType {
 Initialisers are associated with the struct Set, hence to invoke them, the `::` syntax is necessary, e.g. `Set::new(..)`
 
 ```rust
-    /// all in one Initialiser creates a new Set
+    /// all in one Initialiser: creates a new Set
     /// of any self_type SType, from slice d, in asc order 
     pub fn new(set_type: SType, d: &[T], asc:bool) -> Self
 ```
@@ -100,7 +95,7 @@ It is highly recommended to read and run [`tests/tests.rs`](https://github.com/l
 cargo test --release -- --test-threads=1 --nocapture --color always
 ```
 
-The output can be seen by unclicking the last badge above and then the automated test logs therein. 
+The output can be seen by clicking the last badge above and then the automated test logs therein.
 
 ## Set Functions
 
