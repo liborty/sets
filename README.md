@@ -114,13 +114,13 @@ pub trait MutSetOps<T> {
     /// Makes a Set unordered
     fn munordered(&mut self);
     /// Makes a Set ordered
-    fn mordered(&mut self, asc:bool) where f64:From<T>;
+    fn mordered(&mut self, quantify: &mut impl FnMut(&T) -> f64, asc:bool);
     /// Makes any Set indexed
-    fn mindexed(&mut self,asc:bool) where f64:From<T>;
+    fn mindexed(&mut self, quantify: &mut impl FnMut(&T) -> f64, asc:bool);
     /// Converts any Set type to ranked
     fn mranked(&mut self,asc:bool);
     /// General converter: s -> Set of the same type and order as self
-    fn msame(&mut self, s:&mut Self) where f64:From<T>; 
+    fn msame(&mut self, s:&mut Self, quantify: &mut impl FnMut(&T) -> f64);
     /// Deletes the first item from self
     fn mdelete(&mut self, item:T) -> bool;
     /// Deletes all occurrences of a matching item from self, returns their count
@@ -129,7 +129,7 @@ pub trait MutSetOps<T> {
     fn minsert(&mut self, item:T);
     /// reverses the vector of explicit sets and index of indexed sets
     fn mreverse(&mut self);
-    /// Deletes any repetitions
+    /// Deletes all repetitions
     fn mnonrepeat(&mut self); 
     /// Union of two sets of the same type
     fn munion(&mut self, s: &Self);
@@ -141,6 +141,8 @@ pub trait MutSetOps<T> {
 ```
 
 ## Release Notes (Latest First)
+
+**Version 1.2.0** - Updated to `indxvec 1.4` and introduced compatible generalizations. No longer requiring users to globally implement `From` trait for all their types T but instead specify conversion closures on per-individual-use basis. This allows custom dynamic conversions. Beware that this breaks previous usage of `mordered` `mindexed` and `msame` methods of `MutSetOps` trait.
 
 **Version 1.1.4** - Updated dependency `indxvec 1.4`. Added automated github actions test.
 

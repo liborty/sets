@@ -89,13 +89,13 @@ pub trait MutSetOps<T> {
     /// Makes a Set unordered
     fn munordered(&mut self);
     /// Makes a Set ordered
-    fn mordered(&mut self, asc:bool) where f64:From<T>;
+    fn mordered(&mut self, quantify: &mut impl FnMut(&T) -> f64, asc:bool);
     /// Makes any Set indexed
-    fn mindexed(&mut self,asc:bool) where f64:From<T>;
+    fn mindexed(&mut self, quantify: &mut impl FnMut(&T) -> f64, asc:bool);
     /// Converts any Set type to ranked
     fn mranked(&mut self,asc:bool);
     /// General converter: s -> Set of the same type and order as self
-    fn msame(&mut self, s:&mut Self) where f64:From<T>; 
+    fn msame(&mut self, s:&mut Self, quantify: &mut impl FnMut(&T) -> f64);
     /// Deletes the first item from self
     fn mdelete(&mut self, item:T) -> bool;
     /// Deletes all occurrences of a matching item from self, returns their count
