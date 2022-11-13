@@ -142,7 +142,7 @@ pub trait MutSetOps<T> {
 
 ## Release Notes (Latest First)
 
-**Version 1.2.0** - Updated to `indxvec 1.4` and introduced compatible generalizations. No longer requiring users to globally implement `From` trait for all their types T but instead specify conversion closures on per-individual-use basis. This allows custom dynamic conversions. Beware that this breaks previous usage of `mordered` `mindexed` and `msame` methods of `MutSetOps` trait.
+**Version 1.2.0** - Updated to `indxvec 1.4.9` and introduced compatible generalizations. No longer requiring users to globally implement `From` trait for all their types T but instead specify conversion closures on per-individual-use basis. A closure is easier to use and here it allows using the most efficient hashsort for the sorting of the sets. This allows custom dynamic conversions. Beware that this breaks previous usage of `mordered`, `mindexed` and `msame` methods of `MutSetOps` trait.
 
 **Version 1.1.4** - Updated dependency `indxvec 1.4`. Added automated github actions test.
 
