@@ -1,8 +1,8 @@
-# Sets [<img alt="crates.io" src="https://img.shields.io/crates/v/sets?logo=rust">](https://crates.io/crates/sets) [<img alt="crates.io" src="https://img.shields.io/crates/d/sets?logo=rust">](https://crates.io/crates/sets) [<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/liborty/sets/HEAD?logo=github">](https://github.com/liborty/sets) [![Actions Status](https://github.com/liborty/sets/workflows/test/badge.svg)](https://github.com/liborty/sets/actions)
+# Sets [<img alt="crates.io" src="https://img.shields.io/crates/v/sets?logo=rust">](https://crates.io/crates/sets) [<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/liborty/sets/HEAD?logo=github">](https://github.com/liborty/sets) [![Actions Status](https://github.com/liborty/sets/workflows/test/badge.svg)](https://github.com/liborty/sets/actions)
+
+**Author: Libor Spacek**
 
 Set operations, plus efficient sorting, ranking, searching, etc. The aim is to avoid moving data as much as possible. This is done by manipulating indices instead.
-
-## Short Description
 
 This crate defines `Struct: Set`, which wraps five kinds of sets: Empty, Unordered, Ordered, Indexed and Ranked, and methods acting upon them. These methods work on any generic vectors (or slices) of primitive end types `<T>`. Also, on any arbitrarily complex user end type, as long as the required traits `PartialOrd` and `Copy`, are implemented for it (by the user). It adds organisation and type safety to lower level methods from crate `indxvec`.
 
