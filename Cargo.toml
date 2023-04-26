@@ -20,4 +20,4 @@ include = [
 maintenance = { status = "actively-developed" }
 [lib]
 [dependencies]
-indxvec = "1.4"
+indxvec = "1.7"
