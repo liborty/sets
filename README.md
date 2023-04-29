@@ -108,60 +108,8 @@ The STypes of the two operands of union, intersection and difference can be diff
 
 Here 'm' in the methods' names stands for 'mutable'. They overwrite the mutable set to which they are applied with the result. Thus they are not *functional* but in the context of handling large vectors, they are often simpler and more efficient. At the price of destroying the previous contents of self, of course.
 
-```rust
-/// Mutable methods for &mut Set<T>
-pub trait MutSetOps<T> {
-    /// Makes a Set unordered
-    fn munordered(&mut self);
-    /// Makes a Set ordered
-    fn mordered(&mut self, quantify: &mut impl FnMut(&T) -> f64, asc:bool);
-    /// Makes any Set indexed
-    fn mindexed(&mut self, quantify: &mut impl FnMut(&T) -> f64, asc:bool);
-    /// Converts any Set type to ranked
-    fn mranked(&mut self,asc:bool);
-    /// General converter: s -> Set of the same type and order as self
-    fn msame(&mut self, s:&mut Self, quantify: &mut impl FnMut(&T) -> f64);
-    /// Deletes the first item from self
-    fn mdelete(&mut self, item:T) -> bool;
-    /// Deletes all occurrences of a matching item from self, returns their count
-    fn mdeleteall(&mut self, item:T) -> usize;
-    /// Inserts an item of the same end-type to self
-    fn minsert(&mut self, item:T);
-    /// reverses the vector of explicit sets and index of indexed sets
-    fn mreverse(&mut self);
-    /// Deletes all repetitions
-    fn mnonrepeat(&mut self); 
-    /// Union of two sets of the same type
-    fn munion(&mut self, s: &Self);
-    /// Intersection of two sets of the same type
-    fn mintersection(&mut self, s: &Self);
-    /// Removing s from self (i.e. self-s)
-    fn mdifference(&mut self, s: &Self);
-}
-```
-
 ## Release Notes (Latest First)
 
+**Version 1.2.1** - Updated to `indxvec 1.8`. The closure arguments in `MutSetOps` are now simpler. They no longer need to be `&mut`.
+
 **Version 1.2.0** - Updated to `indxvec 1.4.9` and introduced compatible generalizations. No longer requiring users to globally implement `From` trait for all their types T but instead specify conversion closures on per-individual-use basis. A closure is easier to use and here it allows using the most efficient hashsort for the sorting of the sets. This allows custom dynamic conversions. Beware that this breaks previous usage of `mordered`, `mindexed` and `msame` methods of `MutSetOps` trait.
-
-**Version 1.1.4** - Updated dependency `indxvec 1.4`. Added automated github actions test.
-
-**Version 1.1.2** - Updated to indxvec 1.3.3. Pruned and simplified some code. Added `deleteall` to  trait `MutSetOps`.
-
-**Version 1.1.1** - Eliminating unnecessary cloning. Updating to the latest dependency on  indxvec 1.2.8.
-
-**Version 1.1.0** - Joined all four types of sets into one Struct Set. Simplified and generalised code by using enum generics.
-
-**Version 1.0.6** - Added mutable methods `minsert` and `mdelete` to `MutSetOps`, that insert or remove one specific item to/from any of the sets. Added tests of them to `tests/tests.rs`. Updated `indxvec` dependency to its version `1.2.4` or greater.
-
-**Version 1.0.5** - Documentation improvements.
-
-**Version 1.0.4** - `nonrepeat` now always returns an OrderedSet. Clarified `settest`.
-
-**Version 1.0.3** - updated to be compatible with `indxvec` version 1.2.1. Improved `munion`.
-
-**Version 1.0.2** - some changes to printing to reflect changes to `indxvec`.
-
-**Version 1.0.1** - some tidying up of code, no changes of functionality.
-
-**Version 1.0.0** - stable version with some minor improvements to `README.md` (this document). Updated to `indxvec = "^1"` and Rust edition 2021.

@@ -17,7 +17,7 @@ impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd+Default {
     }
 
     /// Makes a Set ordered
-    fn mordered(&mut self, quantify: &mut impl FnMut(&T) -> f64, asc:bool) {
+    fn mordered(&mut self, quantify: impl Copy + Fn(&T) -> f64, asc:bool) {
         match self.stype {
             SType::Empty => return, // no op
             SType::Unordered => { self.data.muthashsort(quantify); if !asc { self.data.mutrevs() } },
@@ -34,7 +34,7 @@ impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd+Default {
     }
 
     /// Makes any Set indexed
-    fn mindexed(&mut self, quantify: &mut impl FnMut(&T) -> f64, asc:bool) { 
+    fn mindexed(&mut self, quantify: impl Copy + Fn(&T) -> f64, asc:bool) { 
         match self.stype { 
             SType::Empty => return, // empty set, no op 
             SType::Unordered => {                 
@@ -69,7 +69,7 @@ impl<T> MutSetOps<T> for Set<T> where T:Copy+PartialOrd+Default {
 
     /// General converter: s -> Set of the same type and order as self
     /// self only serves as a template for the type and order and is not involved in the conversion
-    fn msame(&mut self, s:&mut Self, quantify: &mut impl FnMut(&T) -> f64) { 
+    fn msame(&mut self, s:&mut Self, quantify: impl Copy + Fn(&T) -> f64) { 
         match self.stype { 
             SType::Empty => *s = Set::EMPTYSET, //  was Default::default()
             SType::Unordered => s.munordered(), 
